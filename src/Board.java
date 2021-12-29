@@ -1,24 +1,32 @@
 public class Board {
+    static int whiteCount=12;
+    static int blackCount=12;
     Cell[][] block = new Cell[8][8];
+    boolean whiteSide = true;
+
+    void setWhiteSide(boolean white){
+        this.whiteSide=white;
+    }
 
     void createBoard(){
         for(int i=0; i<8; i++){
             for(int y=0; y<8; y++){
                 block[i][y] = new Cell();
                 block[i][y].setCoord(i,y);
-                if(y%2==0 && i%2==0){
+                if(y%2==1){
                     if(i==0 || i==2){
                         Piece temp = new Piece(true, false, "w");
                         block[i][y].setPiece(temp);
                     }
                 }
-                else if(y%2==1 && i%2==1){
+                else {
                     if(i==1){
                         Piece temp = new Piece(true, false, "w");
                         block[i][y].setPiece(temp);
                     }
                 }
-                else if(y % 2 == 0) {
+
+                if(y % 2 == 0) {
                     if (i == 5 || i == 7) {
                         Piece temp = new Piece(false, false, "b");
                         block[i][y].setPiece(temp);
@@ -54,6 +62,14 @@ public class Board {
             }
             System.out.print("\n");
         }
+        System.out.print("\n");
+    }
+
+    boolean over(){
+        return whiteCount == 0 || blackCount == 0;
+    }
+    boolean isWhiteSide(){
+        return whiteSide;
     }
 
     Cell getCell(int x, int y){
