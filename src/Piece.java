@@ -1,9 +1,9 @@
 public class Piece {
 
-    Piece(boolean white, boolean king, String character){
+    Piece(boolean white, boolean king, String str){
         this.bWhite=white;
         this.bKing=king;
-        this.symbol=character;
+        this.symbol=str;
     }
 
     boolean bWhite;

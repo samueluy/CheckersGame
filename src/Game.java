@@ -8,7 +8,6 @@ public class Game {
         Move main = new Move();
         main.board.createBoard();
         main.board.showBoard();
-
         while(!done){
             System.out.print("(F) Enter X: ");
             fromX=in.nextInt();

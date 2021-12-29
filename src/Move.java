@@ -1,6 +1,8 @@
 //fix side
 
 public class Move {
+    static int searchI=0;
+    static int searchY=0;
     Board board = new Board();
 
     void move(int fromX, int fromY, int toX, int toY){
@@ -22,12 +24,28 @@ public class Move {
     // no piece after capture
     //
     boolean checkValid(int fromX, int fromY, int toX, int toY){ // + make similar to notext
-        if(board.getCell(fromX,fromY).getPiece() != null) { // check if side is valid
-            if (board.isWhiteSide() != board.getCell(fromX, fromY).piece.isWhite()) {
+        if(board.getCell(fromX,fromY).getPiece() != null) {
+            if (board.isWhiteSide() != board.getCell(fromX, fromY).piece.isWhite()) { // moving different side
                 System.out.println("Invalid side");
                 return false;
             }
+
+            else if(board.getCell(fromX,fromY).piece.isWhite()){ // white move back
+                if(toX==fromX+1 || toX==fromX-1)
+                    return true;
+                else if(toY!=fromY+1)
+                    return false;
+                else return false;
+            }
+            else if(!board.getCell(fromX,fromY).piece.isWhite()){ // black move back
+                if(toX==fromX+1 || toX==fromX-1)
+                    return true;
+                else if(toY!=fromY-1)
+                    return false;
+                else return false;
+            }
         }
+
         if(toX >= 8 || toY >= 8 || fromX >= 8 || fromY >= 8 || toX < 0 || toY < 0 || fromX < 0 || fromY < 0){ // out of bounds
             System.out.println("Out of bounds");
             return false;
@@ -40,20 +58,26 @@ public class Move {
             System.out.println("Can not land over a piece");
             return false;
         }
+
         else
             return true;
     }
 
-    boolean checkValidNoText(int fromX, int fromY, int toX, int toY){ // no text print,
+    boolean checkValidAutomatic(int fromX, int fromY, int toX, int toY, boolean capture){ // no text print,
         if(toX >= 8 || toY >= 8 || fromX >= 8 || fromY >= 8 || toX < 0 || toY < 0 || fromX < 0 || fromY < 0) // out of bounds
             return false;
 
         if(board.getCell(fromX,fromY).getPiece() != null) { // check if side is valid
             if (board.isWhiteSide() != board.getCell(fromX, fromY).piece.isWhite()) return false;
 
-            if(board.getCell(toX,toY).getPiece() != null){
-                // same side
-                return board.getCell(fromX, fromY).getPiece().isWhite() != board.getCell(toX, toY).getPiece().isWhite();
+            if(capture) {
+                if (board.getCell(toX, toY).getPiece() != null) {
+                    // same side
+                    return board.getCell(fromX, fromY).getPiece().isWhite() != board.getCell(toX, toY).getPiece().isWhite();
+                }
+            }
+            else{
+                return board.getCell(toX, toY).getPiece() == null;
             }
         }
         else if(board.getCell(fromX,fromY) == null)
@@ -66,35 +90,37 @@ public class Move {
 
     // swap side move
     void checkAndCapture() { // checks for available captures and if so, capture
-        for (int i = 0; i < 8; i++) {
-            for (int y = 0; y < 8; y++) {
+        for (searchI = 0; searchI < 8; searchI++) {
+            for (searchY = 0; searchY < 8; searchY++) {
                 // check up right
-                if(!(i + 1 >= 8 || y - 1 < 0)){
-                    if(board.getCell(i+1,y-1).getPiece()!=null)
-                        capture(i,y,i+2, y-2,i+1,y-1);
+                if(!(searchI + 1 >= 8 || searchY - 1 < 0)){
+                    if(board.getCell(searchI+1,searchY-1).getPiece()!=null)
+                        capture(searchI,searchY,searchI+2, searchY-2,searchI+1,searchY-1);
                 }
 
                 // check up left
-                if(!(i-1 < 0 || y-1 < 0)){
-                    if(board.getCell(i-1,y-1).getPiece()!=null)
-                        capture(i,y,i-2, y-2,i-1,y-1);
+                if(!(searchI-1 < 0 || searchY-1 < 0)){
+                    if(board.getCell(searchI-1,searchY-1).getPiece()!=null)
+                        capture(searchI,searchY,searchI-2, searchY-2,searchI-1,searchY-1);
                     }
                 // check down left
-                if(!(i-1 <0 || y+1 >= 8)) {
-                    if (board.getCell(i - 1, y + 1).getPiece() != null) capture(i,y,i - 2, y + 2,i-1,y+1);
+                if(!(searchI-1 <0 || searchY+1 >= 8)) {
+                    if (board.getCell(searchI - 1, searchY + 1).getPiece() != null) capture(searchI,searchY,searchI - 2, searchY + 2,searchI-1,searchY+1);
                 }
                 //check down right
-                if(!(i+1 >= 8 || y+1 >= 8)) {
-                    if (board.getCell(i + 1, y + 1).getPiece() != null) capture(i,y,i + 2, y + 2,i+1,y+1);
+                if(!(searchI+1 >= 8 || searchY+1 >= 8)) {
+                    if (board.getCell(searchI + 1, searchY + 1).getPiece() != null) capture(searchI,searchY,searchI + 2, searchY + 2,searchI+1,searchY+1);
                 }
             }
         }
     }
 
     void capture(int fromX, int fromY, int toX, int toY, int capturedX, int capturedY){ // missing check if has piece near and capture
-        if(checkValidNoText(fromX,fromY,capturedX,capturedY)) { // originally toX toY
-            if(checkValidNoText(fromX,fromY,toX,toY)) { // originally wala to
+        if(checkValidAutomatic(fromX,fromY,capturedX,capturedY, true)) { // originally toX toY
+            if(checkValidAutomatic(fromX,fromY,toX,toY, false)) { // originally wala to
+                System.out.println("in");
                 Piece temp = board.getCell(fromX, fromY).getPiece();
+                System.out.println(temp.getSymbol());
                 board.getCell(fromX, fromY).setPiece(null);
                 board.getCell(toX, toY).setPiece(temp);
                 board.setWhiteSide(!board.isWhiteSide());
@@ -105,7 +131,22 @@ public class Move {
                     Board.blackCount--;
 
                 board.getCell(capturedX, capturedY).setPiece(null);
+                searchI=0;
+                searchY=0;
                 board.showBoard();
+            }
+        }
+    }
+
+    void convertToKing() {
+        for (int i = 0; i < 8; i++) {
+            if (board.getCell(i, 0).getPiece() != null) {
+                if (!board.getCell(i, 0).getPiece().isWhite()) board.getCell(0, i).getPiece().setKing(true);
+            }
+        }
+        for (int i = 0; i < 8; i++) {
+            if (board.getCell(i, 7).getPiece() != null) {
+                if (board.getCell(i, 7).getPiece().isWhite()) board.getCell(i, 0).getPiece().setKing(true);
             }
         }
     }
