@@ -123,7 +123,56 @@ public class Move {
 
             if(capture) {
                 if (board.getCell(toX, toY).getPiece() != null) {
+
                     // same side
+                    if (board.getCell(fromX, fromY).getPiece().isKing()) { // king
+                        int tempToX, tempToY, tempFromX, tempFromY;
+                        tempToX=toX;
+                        tempToY=toY;
+                        tempFromX=fromX;
+                        tempFromY=fromY;
+                        if (toX > fromX && toY < fromY) { // up right
+                            while(tempToX!=tempFromX || tempToY!=tempFromY){
+                                tempToX--;
+                                tempToY++;
+                                if(tempToX < 0 || tempToY > 7)
+                                    return false;
+                                else if(board.getCell(tempToX,tempToY).getPiece()!=null)
+                                    return false;
+                            }
+                            return true;
+                        } else if (toX < fromX && toY < fromY) { // up left
+                            while(tempToX!=tempFromX || tempToY!=tempFromY){
+                                tempToX++;
+                                tempToY++;
+                                if(tempToX > 7 || tempToY > 7)
+                                    return false;
+                                else if(board.getCell(tempToX,tempToY).getPiece()!=null)
+                                    return false;
+                            }
+                            return true;
+                        } else if (toX < fromX && toY > fromY) { // down left
+                            while(tempToX!=tempFromX || tempToY!=tempFromY){
+                                tempToX++;
+                                tempToY--;
+                                if(tempToX > 7 || tempToY < 0)
+                                    return false;
+                                else if(board.getCell(tempToX,tempToY).getPiece()!=null)
+                                    return false;
+                            }
+                            return true;
+                        } else if (toX > fromX && toY > fromY) { // down right
+                            while(tempToX!=tempFromX || tempToY!=tempFromY){
+                                tempToX--;
+                                tempToY--;
+                                if(tempToX < 0 || tempToY < 0)
+                                    return false;
+                                else if(board.getCell(tempToX,tempToY).getPiece()!=null)
+                                    return false;
+                            }
+                            return true;
+                        }
+                    }
                     return board.getCell(fromX, fromY).getPiece().isWhite() != board.getCell(toX, toY).getPiece().isWhite();
                 }
             }

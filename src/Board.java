@@ -18,13 +18,13 @@ public class Board {
                 block[i][y].setCoord(i,y);
                 if(y%2==1){
                     if(i==0 || i==2){
-                        Piece temp = new Piece(true, true, "w");
+                        Piece temp = new Piece(true, false, "w");
                         block[i][y].setPiece(temp);
                     }
                 }
                 else {
                     if(i==1){
-                        Piece temp = new Piece(true, true, "w");
+                        Piece temp = new Piece(true, false, "w");
                         block[i][y].setPiece(temp);
                     }
                 }
