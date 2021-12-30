@@ -1,8 +1,11 @@
 public class Board {
     static int whiteCount=12;
     static int blackCount=12;
+    static int whiteKingCount=0;
+    static int blackKingCount=0;
     Cell[][] block = new Cell[8][8];
     boolean whiteSide = true;
+    double heuristicVal=0; // - favor black; + favor white
 
     void setWhiteSide(boolean white){
         this.whiteSide=white;
@@ -15,13 +18,13 @@ public class Board {
                 block[i][y].setCoord(i,y);
                 if(y%2==1){
                     if(i==0 || i==2){
-                        Piece temp = new Piece(true, false, "w");
+                        Piece temp = new Piece(true, true, "w");
                         block[i][y].setPiece(temp);
                     }
                 }
                 else {
                     if(i==1){
-                        Piece temp = new Piece(true, false, "w");
+                        Piece temp = new Piece(true, true, "w");
                         block[i][y].setPiece(temp);
                     }
                 }
@@ -66,7 +69,15 @@ public class Board {
     }
 
     boolean over(){
-        return whiteCount == 0 || blackCount == 0;
+        if(whiteCount == 0 || blackCount == 0){
+            if(whiteCount==0)
+                System.out.println("Black win!");
+            else
+                System.out.println("White win!");
+
+            return true;
+        }
+        return false;
     }
     boolean isWhiteSide(){
         return whiteSide;
@@ -74,5 +85,12 @@ public class Board {
 
     Cell getCell(int x, int y){
         return block[y][x];
+    }
+
+    int calcHeuristic(){
+        int pieceValue = whiteCount-blackCount;
+        int kingValue = (whiteKingCount-blackKingCount)*3;
+        // get number of valid moves
+        return pieceValue+kingValue;
     }
 }
