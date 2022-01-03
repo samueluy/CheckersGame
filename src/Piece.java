@@ -1,5 +1,6 @@
 public class Piece {
 
+    Piece(){}
     Piece(boolean white, boolean king, String str){
         this.bWhite=white;
         this.bKing=king;

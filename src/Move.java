@@ -1,39 +1,61 @@
 //fix side
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class Move {
     static int searchI=0;
     static int searchY=0;
     Board board = new Board();
 
-    void move(int fromX, int fromY, int toX, int toY){
-        if(checkValid(fromX,fromY,toX,toY)) { // + make similar to check capture
-            Piece temp = board.getCell(fromX, fromY).getPiece();
-            board.getCell(fromX, fromY).setPiece(null);
-            board.getCell(toX, toY).setPiece(temp);
-            board.setWhiteSide(!board.isWhiteSide());
-            board.showBoard();
+    void move(Board inBoard, int fromX, int fromY, int toX, int toY){ // if move is far, still valid :(
+        if(checkValid(inBoard, fromX,fromY,toX,toY)) { // + make similar to check capture
+            Piece temp = inBoard.getCell(fromX, fromY).getPiece();
+            /*
+            temp.bKing = inBoard.getCell(fromX, fromY).getPiece().bKing;
+            temp.bWhite = inBoard.getCell(fromX, fromY).getPiece().bWhite;
+            temp.symbol = inBoard.getCell(fromX, fromY).getPiece().symbol;
+             */
+            inBoard.getCell(fromX, fromY).setPiece(null);
+            inBoard.getCell(toX, toY).setPiece(temp);
+            inBoard.setWhiteSide(!inBoard.isWhiteSide());
         }
-        else
-            System.out.println("Invalid move! Please input again.");
+        else System.out.println("invalid");
 
-        checkAndCapture();
+        checkAndCapture(inBoard);
     }
 
     // diagonal
     // outside
     // no piece after capture
     //
-    boolean checkValid(int fromX, int fromY, int toX, int toY) { // + make similar to notext
+
+    ArrayList<String> generateValidMoves(Board inBoard){ // generate for king
+        ArrayList<String> currentList = new ArrayList<>();
+        for(int i=0; i<8; i++){
+            for(int y=0; y<8; y++){
+               if(checkValidAutomatic(inBoard, i,y,i+1,y-1,false)) // up right
+                    currentList.add(String.valueOf(i)+String.valueOf(y)+String.valueOf(i+1)+String.valueOf(y-1));
+               if(checkValidAutomatic(inBoard, i,y,i-1,y-1,false))// up left
+                    currentList.add(String.valueOf(i)+String.valueOf(y)+String.valueOf(i-1)+String.valueOf(y-1));
+               if(checkValidAutomatic(inBoard, i,y,i-1,y+1,false))// down left
+                    currentList.add(String.valueOf(i)+String.valueOf(y)+String.valueOf(i-1)+String.valueOf(y+1));
+               if(checkValidAutomatic(inBoard, i,y,i+1,y+1,false))// down right
+                    currentList.add(String.valueOf(i)+String.valueOf(y)+String.valueOf(i+1)+String.valueOf(y+1));
+            }
+        }
+        return currentList;
+    }
+
+    boolean checkValid(Board inBoard, int fromX, int fromY, int toX, int toY) { // + make similar to notext
         if (toX >= 8 || toY >= 8 || fromX >= 8 || fromY >= 8 || toX < 0 || toY < 0 || fromX < 0 || fromY < 0) { // out of bounds
-            System.out.println("Out of bounds");
             return false;
         }
 
-        if (board.getCell(fromX, fromY).getPiece() != null) {
-            if (board.isWhiteSide() != board.getCell(fromX, fromY).piece.isWhite()) { // moving different side
-                System.out.println("Invalid side");
+        if (inBoard.getCell(fromX, fromY).getPiece() != null) {
+            if (inBoard.isWhiteSide() != inBoard.getCell(fromX, fromY).piece.isWhite()) { // moving different side
                 return false;
-            } else if (board.getCell(fromX, fromY).getPiece().isKing()) { // king
+            } else if (inBoard.getCell(fromX, fromY).getPiece().isKing()) { // king
                 int tempToX, tempToY, tempFromX, tempFromY;
                 tempToX=toX;
                 tempToY=toY;
@@ -45,7 +67,7 @@ public class Move {
                         tempToY++;
                         if(tempToX < 0 || tempToY > 7)
                             return false;
-                        else if(board.getCell(tempToX,tempToY).getPiece()!=null)
+                        else if(inBoard.getCell(tempToX,tempToY).getPiece()!=null)
                             return false;
                     }
                     return true;
@@ -55,7 +77,7 @@ public class Move {
                         tempToY++;
                         if(tempToX > 7 || tempToY > 7)
                             return false;
-                        else if(board.getCell(tempToX,tempToY).getPiece()!=null)
+                        else if(inBoard.getCell(tempToX,tempToY).getPiece()!=null)
                             return false;
                     }
                     return true;
@@ -65,7 +87,7 @@ public class Move {
                         tempToY--;
                         if(tempToX > 7 || tempToY < 0)
                             return false;
-                        else if(board.getCell(tempToX,tempToY).getPiece()!=null)
+                        else if(inBoard.getCell(tempToX,tempToY).getPiece()!=null)
                             return false;
                     }
                     return true;
@@ -75,57 +97,50 @@ public class Move {
                         tempToY--;
                         if(tempToX < 0 || tempToY < 0)
                             return false;
-                        else if(board.getCell(tempToX,tempToY).getPiece()!=null)
+                        else if(inBoard.getCell(tempToX,tempToY).getPiece()!=null)
                             return false;
                     }
                     return true;
                 }
             }
             else {
-                if (board.getCell(fromX, fromY).piece.isWhite()) { // white move back
+                if (inBoard.getCell(fromX, fromY).piece.isWhite()) { // white move back
                     if (toX == fromX + 1 || toX == fromX - 1) return true;
                     else if (toY != fromY + 1) {
-                        System.out.println("Piece is not a king");
                         return false;
                     }
                     else{
-                        System.out.println("Piece is not a king");
                         return false;
                     }
 
-                } else if (!board.getCell(fromX, fromY).piece.isWhite()) { // black move back
+                } else if (!inBoard.getCell(fromX, fromY).piece.isWhite()) { // black move back
                     if (toX == fromX + 1 || toX == fromX - 1) return true;
                     else if (toY != fromY - 1){
-                        System.out.println("Piece is not a king");
                         return false;}
                     else{
-                        System.out.println("Piece is not a king");
                         return false;}
                 }
             }
-        } else if (board.getCell(fromX, fromY) == null) {
-            System.out.println("Not a valid piece");
+        } else if (inBoard.getCell(fromX, fromY) == null) {
             return false;
-        } else if (board.getCell(toX, toY).getPiece() != null) {
-            System.out.println("Can not land over a piece");
+        } else if (inBoard.getCell(toX, toY).getPiece() != null) {
             return false;
         } else return true;
 
         return true;
     }
 
-    boolean checkValidAutomatic(int fromX, int fromY, int toX, int toY, boolean capture){ // no text print,
+    boolean checkValidAutomatic(Board inBoard, int fromX, int fromY, int toX, int toY, boolean capture){ // no text print,
         if(toX >= 8 || toY >= 8 || fromX >= 8 || fromY >= 8 || toX < 0 || toY < 0 || fromX < 0 || fromY < 0) // out of bounds
             return false;
 
-        if(board.getCell(fromX,fromY).getPiece() != null) { // check if side is valid
-            if (board.isWhiteSide() != board.getCell(fromX, fromY).piece.isWhite()) return false;
+        if(inBoard.getCell(fromX,fromY).getPiece() != null) { // check if side is valid
+            if (inBoard.isWhiteSide() != inBoard.getCell(fromX, fromY).piece.isWhite()) return false;
 
             if(capture) {
-                if (board.getCell(toX, toY).getPiece() != null) {
-
+                if (inBoard.getCell(toX, toY).getPiece() != null) {
                     // same side
-                    if (board.getCell(fromX, fromY).getPiece().isKing()) { // king
+                    if (inBoard.getCell(fromX, fromY).getPiece().isKing()) { // king
                         int tempToX, tempToY, tempFromX, tempFromY;
                         tempToX=toX;
                         tempToY=toY;
@@ -137,7 +152,7 @@ public class Move {
                                 tempToY++;
                                 if(tempToX < 0 || tempToY > 7)
                                     return false;
-                                else if(board.getCell(tempToX,tempToY).getPiece()!=null)
+                                else if(inBoard.getCell(tempToX,tempToY).getPiece()!=null)
                                     return false;
                             }
                             return true;
@@ -147,7 +162,7 @@ public class Move {
                                 tempToY++;
                                 if(tempToX > 7 || tempToY > 7)
                                     return false;
-                                else if(board.getCell(tempToX,tempToY).getPiece()!=null)
+                                else if(inBoard.getCell(tempToX,tempToY).getPiece()!=null)
                                     return false;
                             }
                             return true;
@@ -157,7 +172,7 @@ public class Move {
                                 tempToY--;
                                 if(tempToX > 7 || tempToY < 0)
                                     return false;
-                                else if(board.getCell(tempToX,tempToY).getPiece()!=null)
+                                else if(inBoard.getCell(tempToX,tempToY).getPiece()!=null)
                                     return false;
                             }
                             return true;
@@ -167,107 +182,124 @@ public class Move {
                                 tempToY--;
                                 if(tempToX < 0 || tempToY < 0)
                                     return false;
-                                else if(board.getCell(tempToX,tempToY).getPiece()!=null)
+                                else if(inBoard.getCell(tempToX,tempToY).getPiece()!=null)
                                     return false;
                             }
                             return true;
                         }
                     }
-                    return board.getCell(fromX, fromY).getPiece().isWhite() != board.getCell(toX, toY).getPiece().isWhite();
+                    return inBoard.getCell(fromX, fromY).getPiece().isWhite() != inBoard.getCell(toX, toY).getPiece().isWhite();
                 }
             }
             else{
-                return board.getCell(toX, toY).getPiece() == null;
+                return inBoard.getCell(toX, toY).getPiece() == null;
             }
         }
-        else if(board.getCell(fromX,fromY) == null)
-            return false;
-        else if(board.getCell(toX,toY).getPiece() != null)
-            return false;
+        else return false;
 
             return true;
     }
 
-    // swap side move
-    void checkAndCapture() { // checks for available captures and if so, capture
+    void checkAndCapture(Board inBoard) { // checks for available captures and if so, capture
         for (searchI = 0; searchI < 8; searchI++) {
             for (searchY = 0; searchY < 8; searchY++) {
                 // check up right
                 if(!(searchI + 1 >= 8 || searchY - 1 < 0)){
-                    if(board.getCell(searchI+1,searchY-1).getPiece()!=null)
-                        capture(searchI,searchY,searchI+2, searchY-2,searchI+1,searchY-1);
+                    if(inBoard.getCell(searchI+1,searchY-1).getPiece()!=null)
+                        capture(inBoard, searchI,searchY,searchI+2, searchY-2,searchI+1,searchY-1);
                 }
 
                 // check up left
                 if(!(searchI-1 < 0 || searchY-1 < 0)){
-                    if(board.getCell(searchI-1,searchY-1).getPiece()!=null)
-                        capture(searchI,searchY,searchI-2, searchY-2,searchI-1,searchY-1);
-                    }
+                    if(inBoard.getCell(searchI-1,searchY-1).getPiece()!=null)
+                        capture(inBoard, searchI,searchY,searchI-2, searchY-2,searchI-1,searchY-1);
+                }
                 // check down left
                 if(!(searchI-1 <0 || searchY+1 >= 8)) {
-                    if (board.getCell(searchI - 1, searchY + 1).getPiece() != null) capture(searchI,searchY,searchI - 2, searchY + 2,searchI-1,searchY+1);
+                    if (inBoard.getCell(searchI - 1, searchY + 1).getPiece() != null) capture(inBoard, searchI,searchY,searchI - 2, searchY + 2,searchI-1,searchY+1);
                 }
                 //check down right
                 if(!(searchI+1 >= 8 || searchY+1 >= 8)) {
-                    if (board.getCell(searchI + 1, searchY + 1).getPiece() != null) capture(searchI,searchY,searchI + 2, searchY + 2,searchI+1,searchY+1);
+                    if (inBoard.getCell(searchI + 1, searchY + 1).getPiece() != null) capture(inBoard, searchI,searchY,searchI + 2, searchY + 2,searchI+1,searchY+1);
                 }
             }
         }
     }
 
-    void capture(int fromX, int fromY, int toX, int toY, int capturedX, int capturedY){ // missing check if has piece near and capture
-        if(checkValidAutomatic(fromX,fromY,capturedX,capturedY, true)) { // originally toX toY
-            if(checkValidAutomatic(fromX,fromY,toX,toY, false)) { // originally wala to
-                System.out.println("in");
-                Piece temp = board.getCell(fromX, fromY).getPiece();
-                System.out.println(temp.getSymbol());
-                board.getCell(fromX, fromY).setPiece(null);
-                board.getCell(toX, toY).setPiece(temp);
-                board.setWhiteSide(!board.isWhiteSide());
+    boolean capture(Board inBoard, int fromX, int fromY, int toX, int toY, int capturedX, int capturedY){ // missing check if has piece near and capture
+        if(checkValidAutomatic(inBoard, fromX,fromY,capturedX,capturedY, true)) { // originally toX toY
+            if(checkValidAutomatic(inBoard, fromX,fromY,toX,toY, false)) { // originally wala to
+                Piece temp = inBoard.getCell(fromX, fromY).getPiece();
+                inBoard.getCell(fromX, fromY).setPiece(null);
+                inBoard.getCell(toX, toY).setPiece(temp);
+                inBoard.setWhiteSide(!inBoard.isWhiteSide());
 
-                if(board.getCell(capturedX,capturedY).getPiece().isKing()){
-                    if(board.getCell(capturedX,capturedY).getPiece().isWhite())
-                    Board.whiteKingCount--;
+                if(inBoard.getCell(capturedX,capturedY).getPiece().isKing()){
+                    if(inBoard.getCell(capturedX,capturedY).getPiece().isWhite())
+                    inBoard.setWhiteKingCount(inBoard.getWhiteKingCount()-1);
                 else
-                    Board.blackCount--;
+                    inBoard.setBlackCount(inBoard.getBlackCount()-1);
                 }
                 else{
-                    if(board.getCell(capturedX,capturedY).getPiece().isWhite())
-                        Board.whiteCount--;
+                    if(inBoard.getCell(capturedX,capturedY).getPiece().isWhite())
+                        inBoard.setWhiteCount(inBoard.getWhiteCount()-1);
                     else
-                        Board.blackCount--;
+                        inBoard.setBlackCount(inBoard.getBlackCount()-1);
                 }
-
-
-                board.getCell(capturedX, capturedY).setPiece(null);
+                inBoard.getCell(capturedX, capturedY).setPiece(null);
                 searchI=0;
                 searchY=0;
-                board.showBoard();
+                return true;
             }
+            return true;
         }
+        return false;
     }
 
-    void convertToKing() {
+    void convertToKing(Board inBoard) {
         for (int i = 0; i < 8; i++) {
-            if (board.getCell(i, 0).getPiece() != null) {
-                if (!board.getCell(i, 0).getPiece().isWhite()){
-                    Board.blackCount--;
-                    Board.blackKingCount++;
-                    board.getCell(0, i).getPiece().setKing(true);
+            if (inBoard.getCell(i, 0).getPiece() != null) {
+                if (!inBoard.getCell(i, 0).getPiece().isWhite()){
+                    inBoard.setBlackCount(inBoard.getBlackCount()-1);
+                    inBoard.setBlackKingCount(inBoard.getBlackKingCount()+1);
+                    inBoard.getCell(0, i).getPiece().setKing(true);
                 }
             }
         }
         for (int i = 0; i < 8; i++) {
-            if (board.getCell(i, 7).getPiece() != null) {
-                if (board.getCell(i, 7).getPiece().isWhite()){
-                    Board.whiteCount--;
-                    Board.whiteKingCount++;
-                    board.getCell(i, 0).getPiece().setKing(true);
+            if (inBoard.getCell(i, 7).getPiece() != null) {
+                if (inBoard.getCell(i, 7).getPiece().isWhite()){
+                    inBoard.setWhiteCount(inBoard.getWhiteCount()-1);
+                    inBoard.setWhiteKingCount(inBoard.getWhiteKingCount());
+                    inBoard.getCell(i, 0).getPiece().setKing(true);
                 }
             }
         }
     }
 
-    void aiMove(){
+    void moveAI(ArrayList<String> listOfMoves){
+        Board tempBoard = new Board();
+        tempBoard.setWhiteSide(board.isWhiteSide());
+        // copy function
+        for(int x=0; x<listOfMoves.size(); x++) {
+            int fromX=Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0)));
+            int fromY=Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1)));
+            int toX=Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(2)));
+            int toY=Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(3)));
+            // copy
+
+            for(int i=0; i<board.getBlock().length; i++)
+                for(int j=0; j<board.getBlock()[i].length; j++)
+                    tempBoard.block[i][j]=board.block[i][j];
+            //Cell[][] copy = Arrays.stream(board.getBlock()).map(Cell[]::clone).toArray(Cell[][]::new);
+            //tempBoard.setBlock(copy);
+                move(tempBoard, fromX, fromY, toX, toY);
+            tempBoard.showBoard();
+            board.showBoard();
+        }
+        // generate temp board
+        // try all moves in arraylist
+        // get worst (black) heuristic
+        // make game board = to the worst move
     }
 }

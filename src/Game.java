@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Game {
@@ -8,8 +9,11 @@ public class Game {
         Move main = new Move();
         main.board.createBoard();
         main.board.showBoard();
+        ArrayList<String> moveList= new ArrayList<>();
 
         while(!done){
+            System.out.println(main.generateValidMoves(main.board).toString()); // print available moves
+
             System.out.print("(F) Enter X: ");
             fromX=in.nextInt();
             System.out.print("(F) Enter Y: ");
@@ -18,7 +22,12 @@ public class Game {
             toX=in.nextInt();
             System.out.print("(T) Enter Y: ");
             toY=in.nextInt();
-            main.move(fromX,fromY,toX,toY);
+            main.move(main.board, fromX,fromY,toX,toY);
+
+            moveList = main.generateValidMoves(main.board); // generate bot moves
+            main.moveAI(moveList);
+
+            main.board.showBoard();
             done=main.board.over();
         }
         //main.move(0,0,1,4);

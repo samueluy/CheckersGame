@@ -1,14 +1,60 @@
-public class Board {
-    static int whiteCount=12;
-    static int blackCount=12;
-    static int whiteKingCount=0;
-    static int blackKingCount=0;
+import java.util.Arrays;
+
+public class Board implements Cloneable{
+    private int whiteCount=12;
+    private int blackCount=12;
+    private int whiteKingCount=0;
+    private int blackKingCount=0;
     Cell[][] block = new Cell[8][8];
-    boolean whiteSide = true;
-    double heuristicVal=0; // - favor black; + favor white
+    private boolean whiteSide = true;
+    private double heuristicVal=0; // - favor black; + favor white
+
+
+    public Board(){}
+
+    public Board(Board inBoard){
+        //Cell[][] copy = Arrays.stream(block).map(Cell[]::clone).toArray(Cell[][]::new);
+        for(int i=0; i<this.getBlock().length; i++)
+            for(int j=0; j<this.getBlock()[i].length; j++);
+               // this.getBlock()[i][j]=;[i][j];
+    }
+    Cell[][] getBlock(){
+        return block;
+    }
 
     void setWhiteSide(boolean white){
         this.whiteSide=white;
+    }
+    void setBlock(Cell[][] block){
+        this.block = block;
+    }
+    void setWhiteCount(int n){
+        this.whiteCount=n;
+    }
+    void setBlackCount(int n){
+        this.blackCount=n;
+    }
+    void setWhiteKingCount(int n){
+        this.whiteKingCount=n;
+    }
+    void setBlackKingCount(int n){
+        this.blackKingCount=n;
+    }
+
+    int getWhiteCount(){
+        return whiteCount;
+    }
+
+    int getBlackCount(){
+        return blackCount;
+    }
+
+    int getWhiteKingCount(){
+        return whiteKingCount;
+    }
+
+    int getBlackKingCount(){
+        return blackKingCount;
     }
 
     void createBoard(){
