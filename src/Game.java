@@ -9,7 +9,7 @@ public class Game {
         Move main = new Move();
         main.board.createBoard();
         main.board.showBoard();
-        ArrayList<String> moveList= new ArrayList<>();
+        ArrayList<String> moveList;
 
         while(!done){
             System.out.println(main.generateValidMoves(main.board).toString()); // print available moves
@@ -25,11 +25,12 @@ public class Game {
             main.move(main.board, fromX,fromY,toX,toY);
 
             moveList = main.generateValidMoves(main.board); // generate bot moves
-            main.moveAI(moveList);
+            main.moveAI(moveList, false);
 
             main.board.showBoard();
+            System.out.println(main.board.getBlackCount());
+
             done=main.board.over();
         }
-        //main.move(0,0,1,4);
     }
 }

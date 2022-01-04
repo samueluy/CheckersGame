@@ -1,11 +1,14 @@
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class Board implements Cloneable{
     private int whiteCount=12;
     private int blackCount=12;
     private int whiteKingCount=0;
     private int blackKingCount=0;
-    Cell[][] block = new Cell[8][8];
+    List<List<Cell>> block = new ArrayList<List<Cell>>();
     private boolean whiteSide = true;
     private double heuristicVal=0; // - favor black; + favor white
 
@@ -13,19 +16,21 @@ public class Board implements Cloneable{
     public Board(){}
 
     public Board(Board inBoard){
-        //Cell[][] copy = Arrays.stream(block).map(Cell[]::clone).toArray(Cell[][]::new);
-        for(int i=0; i<this.getBlock().length; i++)
-            for(int j=0; j<this.getBlock()[i].length; j++);
-               // this.getBlock()[i][j]=;[i][j];
+        this.setBlock(inBoard.getBlock());
+        this.setBlackKingCount(inBoard.getBlackKingCount());
+        this.setWhiteKingCount(inBoard.getWhiteKingCount());
+        this.setBlackCount(inBoard.getBlackCount());
+        this.setWhiteCount(inBoard.getWhiteCount());
+        this.setWhiteSide(inBoard.isWhiteSide());
     }
-    Cell[][] getBlock(){
+    List<List<Cell>> getBlock(){
         return block;
     }
 
     void setWhiteSide(boolean white){
         this.whiteSide=white;
     }
-    void setBlock(Cell[][] block){
+    void setBlock(List<List<Cell>> block){
         this.block = block;
     }
     void setWhiteCount(int n){
@@ -60,31 +65,33 @@ public class Board implements Cloneable{
     void createBoard(){
         for(int i=0; i<8; i++){
             for(int y=0; y<8; y++){
-                block[i][y] = new Cell();
-                block[i][y].setCoord(i,y);
+                block.add(new ArrayList<>());
+                block.get(i).add(new Cell());
+                block.get(i).get(y).setCoord(i,y);
+
                 if(y%2==1){
                     if(i==0 || i==2){
                         Piece temp = new Piece(true, false, "w");
-                        block[i][y].setPiece(temp);
+                        block.get(i).get(y).setPiece(temp);
                     }
                 }
                 else {
                     if(i==1){
                         Piece temp = new Piece(true, false, "w");
-                        block[i][y].setPiece(temp);
+                        block.get(i).get(y).setPiece(temp);
                     }
                 }
 
                 if(y % 2 == 0) {
                     if (i == 5 || i == 7) {
                         Piece temp = new Piece(false, false, "b");
-                        block[i][y].setPiece(temp);
+                        block.get(i).get(y).setPiece(temp);
                     }
                 }
                 else {
                     if (i==6) {
                         Piece temp = new Piece(false, false, "b");
-                        block[i][y].setPiece(temp);
+                        block.get(i).get(y).setPiece(temp);
                     }
                 }
             }
@@ -104,8 +111,8 @@ public class Board implements Cloneable{
             System.out.print(vert + " ");
             vert++;
             for(int y=0; y<8; y++) {
-                if (block[i][y].getPiece() != null)
-                    System.out.print(block[i][y].getPiece().getSymbol());
+                if (block.get(i).get(y).getPiece() != null)
+                    System.out.print(block.get(i).get(y).getPiece().getSymbol());
                 else System.out.print("+");
                 System.out.print(" ");
             }
@@ -130,7 +137,7 @@ public class Board implements Cloneable{
     }
 
     Cell getCell(int x, int y){
-        return block[y][x];
+        return block.get(y).get(x);
     }
 
     int calcHeuristic(){
@@ -139,4 +146,38 @@ public class Board implements Cloneable{
         // get number of valid moves
         return pieceValue+kingValue;
     }
+
+
+    /*
+    @Override
+    public Object clone() {
+        //new board
+        Board board = new Board();
+
+        //initialize everything
+        board.player1Pieces = new ArrayList<>();
+        board.player2Pieces = new ArrayList<>();
+        board.checkersBoard = new CheckersPiece[8][8];
+
+        //copy pieces
+        player1Pieces.forEach(piece -> board.player1Pieces.add((CheckersPiece) piece.clone()));
+        player2Pieces.forEach(piece -> board.player2Pieces.add((CheckersPiece) piece.clone()));
+
+        //copy turn
+        board.player1 = player1;
+
+        //put the pieces on the board
+        board.player1Pieces.forEach(piece -> board.checkersBoard[piece.getRow()][piece.getCol()] = piece);
+        board.player2Pieces.forEach(piece -> board.checkersBoard[piece.getRow()][piece.getCol()] = piece);
+
+        //board callback being null might be dirty
+        board.callback = null;
+
+        board.movesMade = movesMade;
+
+        board.heuristic = heuristic;
+
+        return board;
+    }
+     */
 }

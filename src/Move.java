@@ -1,7 +1,7 @@
-//fix side
-
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+
 
 public class Move {
     static int searchI=0;
@@ -277,29 +277,58 @@ public class Move {
         }
     }
 
-    void moveAI(ArrayList<String> listOfMoves){
-        Board tempBoard = new Board();
-        tempBoard.setWhiteSide(board.isWhiteSide());
-        // copy function
-        for(int x=0; x<listOfMoves.size(); x++) {
-            int fromX=Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0)));
-            int fromY=Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1)));
-            int toX=Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(2)));
-            int toY=Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(3)));
-            // copy
 
-            for(int i=0; i<board.getBlock().length; i++)
-                for(int j=0; j<board.getBlock()[i].length; j++)
-                    tempBoard.block[i][j]=board.block[i][j];
-            //Cell[][] copy = Arrays.stream(board.getBlock()).map(Cell[]::clone).toArray(Cell[][]::new);
-            //tempBoard.setBlock(copy);
-                move(tempBoard, fromX, fromY, toX, toY);
-            tempBoard.showBoard();
-            board.showBoard();
-        }
-        // generate temp board
-        // try all moves in arraylist
-        // get worst (black) heuristic
-        // make game board = to the worst move
+    void moveAI(ArrayList<String> listOfMoves, boolean white){
+        // copy function
+        int curHeuristic=0;
+        int minHeuristic=0;
+        int maxHeuristic=0;
+        Random rand = new Random();
+        //int moveNum = rand.nextInt(listOfMoves.size());
+        int moveNum = rand.nextInt(listOfMoves.size());
+
+        List<List<Cell>> newLayout = new ArrayList<List<Cell>>();
+        for(int x=0; x<listOfMoves.size(); x++) {
+           Board tempBoard = new Board();
+           List<List<Cell>> temp = new ArrayList<List<Cell>>();
+
+           // create copy of current board
+           for(int i=0; i<8; i++){
+               temp.add(new ArrayList<Cell>());
+               for(int y=0; y<8; y++){
+                   temp.get(i).add(new Cell(board.getCell(y,i)));
+               }
+           }
+
+            tempBoard.setBlock(temp);
+            tempBoard.setWhiteSide(white);
+
+           int fromX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0)));
+           int fromY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1)));
+           int toX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(2)));
+           int toY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(3)));
+
+           move(tempBoard, fromX, fromY, toX, toY);
+           curHeuristic=tempBoard.calcHeuristic();
+           System.out.println("This: " + curHeuristic);
+
+           if(!white){
+               if(curHeuristic<minHeuristic) // best black move
+                   newLayout=temp;
+               else if(x==moveNum) // any move
+                   newLayout=temp;
+           }
+           else {
+               if (curHeuristic > maxHeuristic) // best white move
+                   newLayout = temp;
+               else if (x == moveNum) // any move
+                   newLayout = temp;
+           }
+
+           // tree of boards
+
+       }
+        board.setBlock(newLayout);
+        board.setWhiteSide(!white);
     }
 }

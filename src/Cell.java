@@ -11,6 +11,11 @@ public class Cell {
         piece = unit;
     }
 
+    Cell(Cell orig){
+        this.piece=orig.piece;
+        this.coord=orig.coord;
+    }
+
     Piece piece;
     Point coord = new Point();
 
