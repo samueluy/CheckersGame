@@ -9,7 +9,7 @@ public class Move {
     Board board = new Board();
     //Node tree = new Node();
 
-    void move(Board inBoard, int fromX, int fromY, int toX, int toY){ // if move is far, still valid :(
+    boolean move(Board inBoard, int fromX, int fromY, int toX, int toY){ // if move is far, still valid :(
         if(checkValid(inBoard, fromX,fromY,toX,toY)) { // + make similar to check capture
             Piece temp = inBoard.getCell(fromX, fromY).getPiece();
             /*
@@ -23,7 +23,8 @@ public class Move {
         }
         else System.out.println("invalid");
 
-        checkAndCapture(inBoard);
+        // yun na agad value nung child so skipped
+        return checkAndCapture(inBoard);
     }
 
     // diagonal
@@ -201,30 +202,31 @@ public class Move {
             return true;
     }
 
-    void checkAndCapture(Board inBoard) { // checks for available captures and if so, capture
+    boolean checkAndCapture(Board inBoard) { // checks for available captures and if so, capture
         for (searchI = 0; searchI < 8; searchI++) {
             for (searchY = 0; searchY < 8; searchY++) {
                 // check up right
                 if(!(searchI + 1 >= 8 || searchY - 1 < 0)){
                     if(inBoard.getCell(searchI+1,searchY-1).getPiece()!=null)
-                        capture(inBoard, searchI,searchY,searchI+2, searchY-2,searchI+1,searchY-1);
+                        return capture(inBoard, searchI,searchY,searchI+2, searchY-2,searchI+1,searchY-1);
                 }
 
                 // check up left
                 if(!(searchI-1 < 0 || searchY-1 < 0)){
                     if(inBoard.getCell(searchI-1,searchY-1).getPiece()!=null)
-                        capture(inBoard, searchI,searchY,searchI-2, searchY-2,searchI-1,searchY-1);
+                        return capture(inBoard, searchI,searchY,searchI-2, searchY-2,searchI-1,searchY-1);
                 }
                 // check down left
                 if(!(searchI-1 <0 || searchY+1 >= 8)) {
-                    if (inBoard.getCell(searchI - 1, searchY + 1).getPiece() != null) capture(inBoard, searchI,searchY,searchI - 2, searchY + 2,searchI-1,searchY+1);
+                    if (inBoard.getCell(searchI - 1, searchY + 1).getPiece() != null) return capture(inBoard, searchI,searchY,searchI - 2, searchY + 2,searchI-1,searchY+1);
                 }
                 //check down right
                 if(!(searchI+1 >= 8 || searchY+1 >= 8)) {
-                    if (inBoard.getCell(searchI + 1, searchY + 1).getPiece() != null) capture(inBoard, searchI,searchY,searchI + 2, searchY + 2,searchI+1,searchY+1);
+                    if (inBoard.getCell(searchI + 1, searchY + 1).getPiece() != null) return capture(inBoard, searchI,searchY,searchI + 2, searchY + 2,searchI+1,searchY+1);
                 }
             }
         }
+        return false;
     }
 
     boolean capture(Board inBoard, int fromX, int fromY, int toX, int toY, int capturedX, int capturedY){ // missing check if has piece near and capture
@@ -288,16 +290,10 @@ public class Move {
         Node tree = new Node();
         ArrayList<String> possibleMoves = new ArrayList<>();
         possibleMoves = generateValidMoves(current); // parent
-        moveAI(tree, possibleMoves, false, true); // depth 1 black
+        moveAI(tree, possibleMoves, false, true); // depth 2 black
 
         for(int i=0; i<tree.children.size(); i++) {
-            moveAI(tree.children.get(i), tree.children.get(i).list, true, false); // depth 2 white (assume best move for white)
-        }
-
-        for(int i=0; i<tree.children.size(); i++){
-            for(int y=0; y<tree.children.get(i).children.size(); y++){
-                //moveAI(tree.children.get(i).children.get(y), tree.children.get(i).children.get(y).list, false, false); // dept 3 black
-            }
+            moveAI(tree.children.get(i), tree.children.get(i).list, true, false); // depth 3 white (assume best move for white)
         }
     }
 
@@ -337,24 +333,34 @@ public class Move {
                 tree.addChild(new Node(curHeuristic, nextValid.get(x), temp)); // add new node to tree
             }
         } else {
-            for (int x = 0; x < 1; x++) { // listOfMove.size();
+            if(tree.list==null){
                 Board tempBoard = new Board();
-                List<List<Cell>> temp = new ArrayList<List<Cell>>(); // not in use
-                // create copy of current board
-                tempBoard.setBlock(tree.newLayout); // make current board = its parent
-                tempBoard.showBoard();
-                tempBoard.setWhiteSide(tempBoard.isWhiteSide());
+                tree.addChild(new Node(tempBoard.calcHeuristic(), null, null)); // just calculate the heuristic
+            }
+            else {
+                for (int x = 0; x < listOfMoves.size(); x++) {
+                    Board tempBoard = new Board();
+                    List<List<Cell>> temp = new ArrayList<List<Cell>>(); // not in use
+                    // create copy of current board
+                    tempBoard.setBlock(tree.newLayout); // make current board = its parent
+                    tempBoard.showBoard();
+                    tempBoard.setWhiteSide(tempBoard.isWhiteSide());
 
-                int fromX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0)));
-                int fromY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1)));
-                int toX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(2)));
-                int toY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(3)));
+                    int fromX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0)));
+                    int fromY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1)));
+                    int toX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(2)));
+                    int toY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(3)));
 
-                move(tempBoard, fromX, fromY, toX, toY);
-                nextValid.add(generateValidMoves(tempBoard)); // generate valid moves for next layer
-                curHeuristic = tempBoard.calcHeuristic();
-
-                tree.addChild(new Node(curHeuristic, nextValid.get(x), temp));
+                    if (move(tempBoard, fromX, fromY, toX, toY)) { // a capture is found
+                        nextValid.add(generateValidMoves(tempBoard)); // generate valid moves for next layer
+                        curHeuristic = tempBoard.calcHeuristic();
+                        tree.addChild(new Node(curHeuristic, null, temp));
+                    } else {
+                        nextValid.add(generateValidMoves(tempBoard)); // generate valid moves for next layer
+                        curHeuristic = tempBoard.calcHeuristic();
+                        tree.addChild(new Node(curHeuristic, nextValid.get(x), temp));
+                    }
+                }
             }
         }
            /*
