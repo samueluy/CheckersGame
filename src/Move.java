@@ -7,6 +7,7 @@ public class Move {
     static int searchI=0;
     static int searchY=0;
     Board board = new Board();
+    //Node tree = new Node();
 
     void move(Board inBoard, int fromX, int fromY, int toX, int toY){ // if move is far, still valid :(
         if(checkValid(inBoard, fromX,fromY,toX,toY)) { // + make similar to check capture
@@ -277,58 +278,90 @@ public class Move {
         }
     }
 
+    // generate all possible moves for current board
+    // create a temporary board for each move, left to right
+    // generate all possible moves for that board
+    // create a temporary board for each move, left to right
+    // calculate heuristic score
+    // store the value of the best move, down from first
+    void miniMax(Board current){
+        Node tree = new Node();
+        ArrayList<String> possibleMoves = new ArrayList<>();
+        possibleMoves = generateValidMoves(current); // parent
+        moveAI(tree, possibleMoves, false, true); // depth 1 black
 
-    void moveAI(ArrayList<String> listOfMoves, boolean white){
+        for(int i=0; i<tree.children.size(); i++) {
+            moveAI(tree.children.get(i), tree.children.get(i).list, true, false); // depth 2 white (assume best move for white)
+        }
+
+        for(int i=0; i<tree.children.size(); i++){
+            for(int y=0; y<tree.children.get(i).children.size(); y++){
+                //moveAI(tree.children.get(i).children.get(y), tree.children.get(i).children.get(y).list, false, false); // dept 3 black
+            }
+        }
+    }
+
+    void moveAI(Node tree, ArrayList<String> listOfMoves, boolean white, boolean first) {
         // copy function
-        int curHeuristic=0;
-        int minHeuristic=0;
-        int maxHeuristic=0;
+        int curHeuristic;
+        int minHeuristic = 0;
+        int maxHeuristic = 0;
         Random rand = new Random();
-        //int moveNum = rand.nextInt(listOfMoves.size());
-        int moveNum = rand.nextInt(listOfMoves.size());
-
+        List<ArrayList<String>> nextValid = new ArrayList<>();
         List<List<Cell>> newLayout = new ArrayList<List<Cell>>();
-        for(int x=0; x<listOfMoves.size(); x++) {
-           Board tempBoard = new Board();
-           List<List<Cell>> temp = new ArrayList<List<Cell>>();
+        if (first) {
+            for (int x = 0; x < listOfMoves.size(); x++) {
+                Board tempBoard = new Board();
+                List<List<Cell>> temp = new ArrayList<List<Cell>>();
 
-           // create copy of current board
-           for(int i=0; i<8; i++){
-               temp.add(new ArrayList<Cell>());
-               for(int y=0; y<8; y++){
-                   temp.get(i).add(new Cell(board.getCell(y,i)));
-               }
-           }
+                // create copy of current board
+                for (int i = 0; i < 8; i++) {
+                    temp.add(new ArrayList<Cell>());
+                    for (int y = 0; y < 8; y++) {
+                        temp.get(i).add(new Cell(board.getCell(y, i)));
+                    }
+                }
 
-            tempBoard.setBlock(temp);
-            tempBoard.setWhiteSide(white);
+                tempBoard.setBlock(temp);
+                tempBoard.setWhiteSide(white);
 
-           int fromX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0)));
-           int fromY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1)));
-           int toX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(2)));
-           int toY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(3)));
+                int fromX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0)));
+                int fromY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1)));
+                int toX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(2)));
+                int toY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(3)));
 
-           move(tempBoard, fromX, fromY, toX, toY);
-           curHeuristic=tempBoard.calcHeuristic();
-           System.out.println("This: " + curHeuristic);
+                move(tempBoard, fromX, fromY, toX, toY);
+                nextValid.add(generateValidMoves(tempBoard)); // generate valid moves for next layer
+                curHeuristic = tempBoard.calcHeuristic();
 
-           if(!white){
-               if(curHeuristic<minHeuristic) // best black move
-                   newLayout=temp;
-               else if(x==moveNum) // any move
-                   newLayout=temp;
-           }
-           else {
-               if (curHeuristic > maxHeuristic) // best white move
-                   newLayout = temp;
-               else if (x == moveNum) // any move
-                   newLayout = temp;
-           }
+                tree.addChild(new Node(curHeuristic, nextValid.get(x), temp)); // add new node to tree
+            }
+        } else {
+            for (int x = 0; x < 1; x++) { // listOfMove.size();
+                Board tempBoard = new Board();
+                List<List<Cell>> temp = new ArrayList<List<Cell>>(); // not in use
+                // create copy of current board
+                tempBoard.setBlock(tree.newLayout); // make current board = its parent
+                tempBoard.showBoard();
+                tempBoard.setWhiteSide(tempBoard.isWhiteSide());
 
-           // tree of boards
+                int fromX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0)));
+                int fromY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1)));
+                int toX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(2)));
+                int toY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(3)));
 
+                move(tempBoard, fromX, fromY, toX, toY);
+                nextValid.add(generateValidMoves(tempBoard)); // generate valid moves for next layer
+                curHeuristic = tempBoard.calcHeuristic();
+
+                tree.addChild(new Node(curHeuristic, nextValid.get(x), temp));
+            }
+        }
+           /*
        }
         board.setBlock(newLayout);
         board.setWhiteSide(!white);
+        */
     }
 }
+

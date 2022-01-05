@@ -147,6 +147,18 @@ public class Board implements Cloneable{
         return pieceValue+kingValue;
     }
 
+    List<List<Cell>> clone(Board original){
+        List<List<Cell>> temp = new ArrayList<List<Cell>>();
+
+        for(int i=0; i<8; i++){
+            temp.add(new ArrayList<Cell>());
+            for(int y=0; y<8; y++){
+                temp.get(i).add(new Cell(original.getCell(y,i)));
+            }
+        }
+
+        return temp;
+    }
 
     /*
     @Override
@@ -180,4 +192,8 @@ public class Board implements Cloneable{
         return board;
     }
      */
+
+    boolean flip(boolean white){
+        return !white;
+    }
 }

@@ -25,7 +25,8 @@ public class Game {
             main.move(main.board, fromX,fromY,toX,toY);
 
             moveList = main.generateValidMoves(main.board); // generate bot moves
-            main.moveAI(moveList, false);
+            main.miniMax(main.board);
+            //main.moveAI(moveList,false);
 
             main.board.showBoard();
             System.out.println(main.board.getBlackCount());
