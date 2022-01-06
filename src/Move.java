@@ -251,19 +251,16 @@ public class Move {
             moveAI(tree.children.get(i), tree.children.get(i).list, true, false); // depth 3 white (assume best move for white)
         }
 
-        List<List<Cell>> bestMove = new ArrayList<List<Cell>>();
+        List<List<Cell>> bestMove;
         bestMove=tree.children.get(0).newLayout; // first move by default
-        int curHeuristic = 0;
+        int curHeuristic = tree.children.get(0).value; // first heuristic value by default
         for(int i=0; i<tree.children.size(); i++){
-            if(tree.children.get(i).value>curHeuristic)
+            if(tree.children.get(i).value<curHeuristic)
                 bestMove=tree.children.get(i).newLayout;
         }
-        // check for all values then select the highest one
-        //for(int i=0; i<tree.children.get(0).size(); i++);
         board.setBlock(bestMove);
-        //board.setBlock(tree.children.get(0).children.get(0).newLayout);
-        //System.out.println(tree.children.get(0).children.get(0));
-
+        //board.showBoard();
+        board.setWhiteSide(!board.isWhiteSide());
     }
 
     void moveAI(Node tree, ArrayList<String> listOfMoves, boolean white, boolean first) {
@@ -286,7 +283,7 @@ public class Move {
                 }
 
                 tempBoard.setBlock(temp);
-                tempBoard.setWhiteSide(white);
+                tempBoard.setWhiteSide(!tempBoard.isWhiteSide());
 
                 int fromX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0)));
                 int fromY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1)));
@@ -314,7 +311,14 @@ public class Move {
                     List<List<Cell>> temp = new ArrayList<List<Cell>>();
 
                     // create copy of current board
-                    tempBoard.setBlock(tree.newLayout); // make current board = its parent
+                    for (int i = 0; i < 8; i++) {
+                        temp.add(new ArrayList<Cell>());
+                        for (int y = 0; y < 8; y++) {
+                            temp.get(i).add(new Cell(tree.newLayout.get(i).get(y)));
+                        }
+                    }
+
+                    tempBoard.setBlock(temp); // make current board = its parent
                     //tempBoard.showBoard();
                     tempBoard.setWhiteSide(tempBoard.isWhiteSide());
 
