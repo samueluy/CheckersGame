@@ -6,32 +6,32 @@ public class Cell {
         coord = new Point();
     }
 
-    Cell(Piece unit){
+    Cell(Piece unit) {
         coord = new Point();
         piece = unit;
     }
 
-    Cell(Cell orig){
-        this.piece=orig.piece;
-        this.coord=orig.coord;
+    Cell(Cell orig) {
+        this.piece = orig.piece;
+        this.coord = orig.coord;
     }
 
     Piece piece;
     Point coord = new Point();
 
-    void setPiece(Piece piece){
-        this.piece=piece;
+    void setPiece(Piece piece) {
+        this.piece = piece;
     }
 
-    void setCoord(int x, int y){
-        this.coord.setLocation(x,y);
+    void setCoord(int x, int y) {
+        this.coord.setLocation(x, y);
     }
 
-    Point getCoord(){
+    Point getCoord() {
         return coord;
     }
 
-    Piece getPiece(){
+    Piece getPiece() {
         return piece;
     }
 }
