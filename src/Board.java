@@ -162,39 +162,6 @@ public class Board implements Cloneable {
         return temp;
     }
 
-    /*
-    @Override
-    public Object clone() {
-        //new board
-        Board board = new Board();
-
-        //initialize everything
-        board.player1Pieces = new ArrayList<>();
-        board.player2Pieces = new ArrayList<>();
-        board.checkersBoard = new CheckersPiece[8][8];
-
-        //copy pieces
-        player1Pieces.forEach(piece -> board.player1Pieces.add((CheckersPiece) piece.clone()));
-        player2Pieces.forEach(piece -> board.player2Pieces.add((CheckersPiece) piece.clone()));
-
-        //copy turn
-        board.player1 = player1;
-
-        //put the pieces on the board
-        board.player1Pieces.forEach(piece -> board.checkersBoard[piece.getRow()][piece.getCol()] = piece);
-        board.player2Pieces.forEach(piece -> board.checkersBoard[piece.getRow()][piece.getCol()] = piece);
-
-        //board callback being null might be dirty
-        board.callback = null;
-
-        board.movesMade = movesMade;
-
-        board.heuristic = heuristic;
-
-        return board;
-    }
-     */
-
     void convertToKing(Board inBoard) {
         for (int i = 0; i < 8; i++) {
             if (inBoard.getCell(i, 0).getPiece() != null) {

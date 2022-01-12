@@ -14,6 +14,10 @@ public class Node {
         this.newLayout = pos;
     }
 
+    public Node(int value){
+        this.value = value;
+    }
+
     public Node() {
     }
 

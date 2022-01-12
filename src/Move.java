@@ -1,25 +1,41 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 
 public class Move {
     static int searchI = 0;
     static int searchY = 0;
     Board board = new Board();
-    //Node tree = new Node();
 
-    boolean move(Board inBoard, int fromX, int fromY, int toX, int toY) { // if move is far, still valid :(
-        if (checkValid(inBoard, fromX, fromY, toX, toY)) { // + make similar to check capture
-            Piece temp = inBoard.getCell(fromX, fromY).getPiece();
-            inBoard.getCell(fromX, fromY).setPiece(null);
-            inBoard.getCell(toX, toY).setPiece(temp);
-            inBoard.setWhiteSide(!inBoard.isWhiteSide());
-        } else System.out.println("invalid");
-
-        // yun na agad value nung child so skipped
-        inBoard.convertToKing(inBoard);
-        return checkAndCapture(inBoard);
+    /*
+    return 0 = Invalid move; 1 = Valid move-no capture; 2 = Valid move-capture
+     */
+    int move(Board inBoard, int fromX, int fromY, int toX, int toY, ArrayList<String> listOfMoves) {
+        boolean flag = false;
+        boolean captured = false;
+        for(int x=0; x< listOfMoves.size(); x++){
+            if(fromX == Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0))) &&
+                fromY == Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1))) &&
+                toX == Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(2))) &&
+                toY== Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(3)))){
+                    Piece temp = inBoard.getCell(fromX, fromY).getPiece();
+                    inBoard.getCell(fromX, fromY).setPiece(null);
+                    inBoard.getCell(toX, toY).setPiece(temp);
+                    inBoard.setWhiteSide(!inBoard.isWhiteSide());
+                    flag=true;
+            }
+        }
+        if(!flag){
+            System.out.println("Invalid Move");
+            return 0;
+        }
+        else{
+            inBoard.convertToKing(inBoard);
+            if(checkAndCapture(inBoard))
+                return 2;
+            return 1;
+        }
     }
 
     ArrayList<String> generateValidMoves(Board inBoard) { // generate for king
@@ -39,7 +55,7 @@ public class Move {
         return currentList;
     }
 
-    boolean checkValid(Board inBoard, int fromX, int fromY, int toX, int toY) { // + make similar to notext
+    boolean checkValid(Board inBoard, int fromX, int fromY, int toX, int toY) {
         if (toX >= 8 || toY >= 8 || fromX >= 8 || fromY >= 8 || toX < 0 || toY < 0 || fromX < 0 || fromY < 0) { // out of bounds
             return false;
         }
@@ -235,13 +251,16 @@ public class Move {
         return false;
     }
 
-    // generate all possible moves for current board
-    // create a temporary board for each move, left to right
-    // generate all possible moves for that board
-    // create a temporary board for each move, left to right
-    // calculate heuristic score
-    // store the value of the best move, down from first
-    void miniMax(Board current) {
+    /*
+    generate all possible moves for current board
+    create a temporary board for each move, left to right
+    generate all possible moves for that board
+    create a temporary board for each move, left to right
+    calculate heuristic score
+    store the value of the best move, down from first
+    */
+
+    void miniMaxTemp(Board current) {
         Node tree = new Node();
         ArrayList<String> possibleMoves = new ArrayList<>();
         possibleMoves = generateValidMoves(current); // parent
@@ -252,98 +271,128 @@ public class Move {
         }
 
         List<List<Cell>> bestMove;
-        bestMove=tree.children.get(0).newLayout; // first move by default
+        bestMove = tree.children.get(0).newLayout; // first move by default
         int curHeuristic = tree.children.get(0).value; // first heuristic value by default
-        for(int i=0; i<tree.children.size(); i++){
-            if(tree.children.get(i).value<curHeuristic)
-                bestMove=tree.children.get(i).newLayout;
+        for (int i = 0; i < tree.children.size(); i++) {
+            if (tree.children.get(i).value < curHeuristic) bestMove = tree.children.get(i).newLayout;
         }
         board.setBlock(bestMove);
         //board.showBoard();
         board.setWhiteSide(!board.isWhiteSide());
     }
 
-    void moveAI(Node tree, ArrayList<String> listOfMoves, boolean white, boolean first) {
-        int curHeuristic;
-        int minHeuristic = 0;
-        int maxHeuristic = 0;
-        List<ArrayList<String>> nextValid = new ArrayList<>();
-        List<List<Cell>> newLayout = new ArrayList<List<Cell>>();
-        if (first) {
-            for (int x = 0; x < listOfMoves.size(); x++) {
-                Board tempBoard = new Board();
-                List<List<Cell>> temp = new ArrayList<List<Cell>>();
+    // Driver
+    void miniMaxMove(Board current){
+        Node MAX = new Node(1000);
+        Node MIN = new Node(-1000);
+        Node tree = new Node();
+        ArrayList<String> possibleMoves;
+        possibleMoves = generateValidMoves(current);
+        moveAI(tree, possibleMoves, false, true); // depth 2
 
-                // create copy of current board
-                for (int i = 0; i < 8; i++) {
-                    temp.add(new ArrayList<Cell>());
-                    for (int y = 0; y < 8; y++) {
-                        temp.get(i).add(new Cell(board.getCell(y, i)));
-                    }
-                }
+        Node bestMove = miniMaxAlgorithm(0, false, tree, MIN, MAX);
 
-                tempBoard.setBlock(temp);
-                tempBoard.setWhiteSide(!tempBoard.isWhiteSide());
+        board.setBlock(bestMove.newLayout);
+        board.setWhiteSide(!board.isWhiteSide());
+    }
 
-                int fromX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0)));
-                int fromY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1)));
-                int toX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(2)));
-                int toY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(3)));
+    Node miniMaxAlgorithm(int depth, Boolean maximizingPlayer, Node current, Node alpha, Node beta){
+        Node MAX = new Node(1000);
+        Node MIN = new Node(-1000);
+        Board tempBoard = new Board();
+        List<List<Cell>> temp = new ArrayList<List<Cell>>();
 
-                if (move(tempBoard, fromX, fromY, toX, toY)) { // a capture is found
-                    nextValid.add(generateValidMoves(tempBoard)); // generate valid moves for next layer
-                    curHeuristic = tempBoard.calcHeuristic();
-                    tree.addChild(new Node(curHeuristic, null, temp));
-                } else {
-                    nextValid.add(generateValidMoves(tempBoard)); // generate valid moves for next layer
-                    curHeuristic = tempBoard.calcHeuristic();
-                    tree.addChild(new Node(curHeuristic, nextValid.get(x), temp));
-                }
-            }
-
-        } else {
-            if (tree.list == null) {
-                Board tempBoard = new Board();
-                tree.addChild(new Node(tempBoard.calcHeuristic(), null, null)); // just calculate the heuristic
-            } else {
-                for (int x = 0; x < listOfMoves.size(); x++) {
-                    Board tempBoard = new Board();
-                    List<List<Cell>> temp = new ArrayList<List<Cell>>();
-
-                    // create copy of current board
-                    for (int i = 0; i < 8; i++) {
-                        temp.add(new ArrayList<Cell>());
-                        for (int y = 0; y < 8; y++) {
-                            temp.get(i).add(new Cell(tree.newLayout.get(i).get(y)));
-                        }
-                    }
-
-                    tempBoard.setBlock(temp); // make current board = its parent
-                    //tempBoard.showBoard();
-                    tempBoard.setWhiteSide(tempBoard.isWhiteSide());
-
-                    int fromX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0)));
-                    int fromY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1)));
-                    int toX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(2)));
-                    int toY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(3)));
-
-                    if (move(tempBoard, fromX, fromY, toX, toY)) { // a capture is found
-                        nextValid.add(generateValidMoves(tempBoard)); // generate valid moves for next layer
-                        curHeuristic = tempBoard.calcHeuristic();
-                        tree.addChild(new Node(curHeuristic, null, temp));
-                    } else {
-                        nextValid.add(generateValidMoves(tempBoard)); // generate valid moves for next layer
-                        curHeuristic = tempBoard.calcHeuristic();
-                        tree.addChild(new Node(curHeuristic, nextValid.get(x), temp));
-                    }
-                }
+        // create copy of current board
+        for (int i = 0; i < 8; i++) {
+            temp.add(new ArrayList<Cell>());
+            for (int y = 0; y < 8; y++) {
+                temp.get(i).add(new Cell(board.getCell(y, i)));
             }
         }
-           /*
-       }
-        board.setBlock(newLayout);
-        board.setWhiteSide(!white);
-        */
+
+        //tempBoard.setBlock(temp);
+        tempBoard.setWhiteSide(!tempBoard.isWhiteSide());
+
+        if(depth == 3)
+             return current;
+
+        if(maximizingPlayer) {
+            Node best = MIN;
+            for (int i = 0; i < current.children.size(); i++) {
+                tempBoard.setBlock(current.children.get(i).newLayout);
+                //moveAI(current.children.get(i), current.children.get(i).list, true, true);
+
+                Node val = miniMaxAlgorithm(depth+1, false, current.children.get(i), alpha, beta);
+
+                //best = Math.max(best,val);
+                if(best.value < tempBoard.calcHeuristic())
+                    best = current.children.get(i);
+
+                //alpha = Math.max(alpha,best);
+                if(alpha.value < best.value)
+                    alpha = best;
+
+                if(beta.value <= alpha.value)
+                    break;
+            }
+            return best;
+        }
+        else {
+            Node best = MAX;
+
+            for (int i = 0; i < current.children.size(); i++) {
+                tempBoard.setBlock(current.children.get(i).newLayout);
+                //moveAI(current.children.get(i), current.children.get(i).list, false, true);
+                Node val = miniMaxAlgorithm(depth + 1, true, current.children.get(i), alpha, beta);
+
+                //best = Math.min(best,val);
+                if(best.value > tempBoard.calcHeuristic())
+                    best = current.children.get(i);
+
+                //alpha = Math.min(alpha,best);
+                if(alpha.value > best.value)
+                    alpha = best;
+
+                if (beta.value <= alpha.value) break;
+            }
+            return best;
+        }
+    }
+
+    void moveAI(Node tree, ArrayList<String> listOfMoves, boolean white, boolean first) {
+        int curHeuristic;
+        List<ArrayList<String>> nextValid = new ArrayList<>();
+        List<List<Cell>> newLayout = new ArrayList<List<Cell>>();
+        for (int x = 0; x < listOfMoves.size(); x++) {
+            Board tempBoard = new Board();
+            List<List<Cell>> temp = new ArrayList<List<Cell>>();
+
+            // create copy of current board
+            for (int i = 0; i < 8; i++) {
+                temp.add(new ArrayList<Cell>());
+                for (int y = 0; y < 8; y++) {
+                    temp.get(i).add(new Cell(board.getCell(y, i)));
+                }
+            }
+
+            tempBoard.setBlock(temp);
+            tempBoard.setWhiteSide(!tempBoard.isWhiteSide());
+
+            int fromX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0)));
+            int fromY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1)));
+            int toX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(2)));
+            int toY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(3)));
+
+            if (move(tempBoard, fromX, fromY, toX, toY, listOfMoves)==2) { // a capture is found
+                nextValid.add(generateValidMoves(tempBoard)); // generate valid moves for next layer
+                curHeuristic = tempBoard.calcHeuristic();
+                tree.addChild(new Node(curHeuristic, nextValid.get(x), temp));
+            } else {
+                nextValid.add(generateValidMoves(tempBoard)); // generate valid moves for next layer
+                curHeuristic = tempBoard.calcHeuristic();
+                tree.addChild(new Node(curHeuristic, nextValid.get(x), temp));
+            }
+        }
     }
 }
 

@@ -9,24 +9,24 @@ public class Game {
         Move main = new Move();
         main.board.createBoard();
         main.board.showBoard();
-        ArrayList<String> moveList;
 
-        while (!done) {
-            System.out.println(main.generateValidMoves(main.board).toString()); // print available moves
+        while (!done) { // until game is over
+            do {
+                System.out.println(main.generateValidMoves(main.board).toString()); // print available moves
+                System.out.print("(F) Enter X: ");
+                fromX = in.nextInt();
+                System.out.print("(F) Enter Y: ");
+                fromY = in.nextInt();
+                System.out.print("(T) Enter X: ");
+                toX = in.nextInt();
+                System.out.print("(T) Enter Y: ");
+                toY = in.nextInt();
+            }
+            while(main.move(main.board, fromX, fromY, toX, toY, main.generateValidMoves(main.board))==0); // Loop till valid input
 
-            System.out.print("(F) Enter X: ");
-            fromX = in.nextInt();
-            System.out.print("(F) Enter Y: ");
-            fromY = in.nextInt();
-            System.out.print("(T) Enter X: ");
-            toX = in.nextInt();
-            System.out.print("(T) Enter Y: ");
-            toY = in.nextInt();
-            main.move(main.board, fromX, fromY, toX, toY);
-
-            //moveList = main.generateValidMoves(main.board); // generate bot moves
-            main.miniMax(main.board);
-
+            //main.miniMaxTemp(main.board); // run minimax algorithm
+            //main.miniMax(0, false, )
+            main.miniMaxMove(main.board);
             main.board.showBoard();
 
             done = main.board.over();
