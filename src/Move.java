@@ -277,7 +277,6 @@ public class Move {
             if (tree.children.get(i).value < curHeuristic) bestMove = tree.children.get(i).newLayout;
         }
         board.setBlock(bestMove);
-        //board.showBoard();
         board.setWhiteSide(!board.isWhiteSide());
     }
 
@@ -310,7 +309,6 @@ public class Move {
             }
         }
 
-        //tempBoard.setBlock(temp);
         tempBoard.setWhiteSide(!tempBoard.isWhiteSide());
 
         if(depth == 3)
@@ -319,10 +317,8 @@ public class Move {
         if(maximizingPlayer) {
             Node best = MIN;
             for (int i = 0; i < current.children.size(); i++) {
-                tempBoard.setBlock(current.children.get(i).newLayout);
-                //moveAI(current.children.get(i), current.children.get(i).list, true, true);
-
                 Node val = miniMaxAlgorithm(depth+1, false, current.children.get(i), alpha, beta);
+                tempBoard.setBlock(val.newLayout);
 
                 //best = Math.max(best,val);
                 if(best.value < tempBoard.calcHeuristic())
@@ -341,10 +337,8 @@ public class Move {
             Node best = MAX;
 
             for (int i = 0; i < current.children.size(); i++) {
-                tempBoard.setBlock(current.children.get(i).newLayout);
-                //moveAI(current.children.get(i), current.children.get(i).list, false, true);
                 Node val = miniMaxAlgorithm(depth + 1, true, current.children.get(i), alpha, beta);
-
+                tempBoard.setBlock(val.newLayout);
                 //best = Math.min(best,val);
                 if(best.value > tempBoard.calcHeuristic())
                     best = current.children.get(i);
