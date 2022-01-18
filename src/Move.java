@@ -1,7 +1,5 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class Move {
     static int searchI = 0;
@@ -13,27 +11,21 @@ public class Move {
      */
     int move(Board inBoard, int fromX, int fromY, int toX, int toY, ArrayList<String> listOfMoves) {
         boolean flag = false;
-        boolean captured = false;
-        for(int x=0; x< listOfMoves.size(); x++){
-            if(fromX == Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0))) &&
-                fromY == Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1))) &&
-                toX == Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(2))) &&
-                toY== Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(3)))){
-                    Piece temp = inBoard.getCell(fromX, fromY).getPiece();
-                    inBoard.getCell(fromX, fromY).setPiece(null);
-                    inBoard.getCell(toX, toY).setPiece(temp);
-                    inBoard.setWhiteSide(!inBoard.isWhiteSide());
-                    flag=true;
+        for (int x = 0; x < listOfMoves.size(); x++) {
+            if (fromX == Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0))) && fromY == Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1))) && toX == Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(2))) && toY == Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(3)))) {
+                Piece temp = inBoard.getCell(fromX, fromY).getPiece();
+                inBoard.getCell(fromX, fromY).setPiece(null);
+                inBoard.getCell(toX, toY).setPiece(temp);
+                inBoard.setWhiteSide(!inBoard.isWhiteSide());
+                flag = true;
             }
         }
-        if(!flag){
+        if (!flag) {
             System.out.println("Invalid Move");
             return 0;
-        }
-        else{
+        } else {
             inBoard.convertToKing(inBoard);
-            if(checkAndCapture(inBoard))
-                return 2;
+            if (checkAndCapture(inBoard)) return 2;
             return 1;
         }
     }
@@ -42,91 +34,17 @@ public class Move {
         ArrayList<String> currentList = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
             for (int y = 0; y < 8; y++) {
-                if (checkValidAutomatic(inBoard, i, y, i + 1, y - 1, false)) // up right
+                if (checkValidAutomatic(inBoard, i, y, i + 1, y - 1, false) && !inBoard.isWhiteSide()) // up right
                     currentList.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i + 1) + String.valueOf(y - 1));
-                if (checkValidAutomatic(inBoard, i, y, i - 1, y - 1, false))// up left
+                if (checkValidAutomatic(inBoard, i, y, i - 1, y - 1, false) && !inBoard.isWhiteSide())// up left
                     currentList.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i - 1) + String.valueOf(y - 1));
-                if (checkValidAutomatic(inBoard, i, y, i - 1, y + 1, false))// down left
+                if (checkValidAutomatic(inBoard, i, y, i - 1, y + 1, false) && inBoard.isWhiteSide())// down left
                     currentList.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i - 1) + String.valueOf(y + 1));
-                if (checkValidAutomatic(inBoard, i, y, i + 1, y + 1, false))// down right
+                if (checkValidAutomatic(inBoard, i, y, i + 1, y + 1, false) && inBoard.isWhiteSide())// down right
                     currentList.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i + 1) + String.valueOf(y + 1));
             }
         }
         return currentList;
-    }
-
-    boolean checkValid(Board inBoard, int fromX, int fromY, int toX, int toY) {
-        if (toX >= 8 || toY >= 8 || fromX >= 8 || fromY >= 8 || toX < 0 || toY < 0 || fromX < 0 || fromY < 0) { // out of bounds
-            return false;
-        }
-
-        if (inBoard.getCell(fromX, fromY).getPiece() != null) {
-            if (inBoard.isWhiteSide() != inBoard.getCell(fromX, fromY).piece.isWhite()) { // moving different side
-                return false;
-            } else if (inBoard.getCell(fromX, fromY).getPiece().isKing()) { // king
-                int tempToX, tempToY, tempFromX, tempFromY;
-                tempToX = toX;
-                tempToY = toY;
-                tempFromX = fromX;
-                tempFromY = fromY;
-                if (toX > fromX && toY < fromY) { // up right
-                    while (tempToX != tempFromX || tempToY != tempFromY) {
-                        tempToX--;
-                        tempToY++;
-                        if (tempToX < 0 || tempToY > 7) return false;
-                        else if (inBoard.getCell(tempToX, tempToY).getPiece() != null) return false;
-                    }
-                    return true;
-                } else if (toX < fromX && toY < fromY) { // up left
-                    while (tempToX != tempFromX || tempToY != tempFromY) {
-                        tempToX++;
-                        tempToY++;
-                        if (tempToX > 7 || tempToY > 7) return false;
-                        else if (inBoard.getCell(tempToX, tempToY).getPiece() != null) return false;
-                    }
-                    return true;
-                } else if (toX < fromX && toY > fromY) { // down left
-                    while (tempToX != tempFromX || tempToY != tempFromY) {
-                        tempToX++;
-                        tempToY--;
-                        if (tempToX > 7 || tempToY < 0) return false;
-                        else if (inBoard.getCell(tempToX, tempToY).getPiece() != null) return false;
-                    }
-                    return true;
-                } else if (toX > fromX && toY > fromY) { // down right
-                    while (tempToX != tempFromX || tempToY != tempFromY) {
-                        tempToX--;
-                        tempToY--;
-                        if (tempToX < 0 || tempToY < 0) return false;
-                        else if (inBoard.getCell(tempToX, tempToY).getPiece() != null) return false;
-                    }
-                    return true;
-                }
-            } else {
-                if (inBoard.getCell(fromX, fromY).piece.isWhite()) { // white move back
-                    if (toX == fromX + 1 || toX == fromX - 1) return true;
-                    else if (toY != fromY + 1) {
-                        return false;
-                    } else {
-                        return false;
-                    }
-
-                } else if (!inBoard.getCell(fromX, fromY).piece.isWhite()) { // black move back
-                    if (toX == fromX + 1 || toX == fromX - 1) return true;
-                    else if (toY != fromY - 1) {
-                        return false;
-                    } else {
-                        return false;
-                    }
-                }
-            }
-        } else if (inBoard.getCell(fromX, fromY) == null) {
-            return false;
-        } else if (inBoard.getCell(toX, toY).getPiece() != null) {
-            return false;
-        } else return true;
-
-        return true;
     }
 
     boolean checkValidAutomatic(Board inBoard, int fromX, int fromY, int toX, int toY, boolean capture) { // no text print,
@@ -251,37 +169,8 @@ public class Move {
         return false;
     }
 
-    /*
-    generate all possible moves for current board
-    create a temporary board for each move, left to right
-    generate all possible moves for that board
-    create a temporary board for each move, left to right
-    calculate heuristic score
-    store the value of the best move, down from first
-    */
-
-    void miniMaxTemp(Board current) {
-        Node tree = new Node();
-        ArrayList<String> possibleMoves = new ArrayList<>();
-        possibleMoves = generateValidMoves(current); // parent
-        moveAI(tree, possibleMoves, false, true); // depth 2 black
-
-        for (int i = 0; i < tree.children.size(); i++) {
-            moveAI(tree.children.get(i), tree.children.get(i).list, true, false); // depth 3 white (assume best move for white)
-        }
-
-        List<List<Cell>> bestMove;
-        bestMove = tree.children.get(0).newLayout; // first move by default
-        int curHeuristic = tree.children.get(0).value; // first heuristic value by default
-        for (int i = 0; i < tree.children.size(); i++) {
-            if (tree.children.get(i).value < curHeuristic) bestMove = tree.children.get(i).newLayout;
-        }
-        board.setBlock(bestMove);
-        board.setWhiteSide(!board.isWhiteSide());
-    }
-
     // Driver
-    void miniMaxMove(Board current){
+    void miniMaxMove(Board current) {
         Node MAX = new Node(1000);
         Node MIN = new Node(-1000);
         Node tree = new Node();
@@ -295,7 +184,7 @@ public class Move {
         board.setWhiteSide(!board.isWhiteSide());
     }
 
-    Node miniMaxAlgorithm(int depth, Boolean maximizingPlayer, Node current, Node alpha, Node beta){
+    Node miniMaxAlgorithm(int depth, Boolean maximizingPlayer, Node current, Node alpha, Node beta) {
         Node MAX = new Node(1000);
         Node MIN = new Node(-1000);
         Board tempBoard = new Board();
@@ -311,41 +200,34 @@ public class Move {
 
         tempBoard.setWhiteSide(!tempBoard.isWhiteSide());
 
-        if(depth == 3)
-             return current;
+        if (depth == 3) return current;
 
-        if(maximizingPlayer) {
+        if (maximizingPlayer) {
             Node best = MIN;
             for (int i = 0; i < current.children.size(); i++) {
-                Node val = miniMaxAlgorithm(depth+1, false, current.children.get(i), alpha, beta);
+                Node val = miniMaxAlgorithm(depth + 1, false, current.children.get(i), alpha, beta);
                 tempBoard.setBlock(val.newLayout);
 
                 //best = Math.max(best,val);
-                if(best.value < tempBoard.calcHeuristic())
-                    best = current.children.get(i);
+                if (best.value < tempBoard.calcHeuristic()) best = current.children.get(i);
 
                 //alpha = Math.max(alpha,best);
-                if(alpha.value < best.value)
-                    alpha = best;
+                if (alpha.value < best.value) alpha = best;
 
-                if(beta.value <= alpha.value)
-                    break;
+                if (beta.value <= alpha.value) break;
             }
             return best;
-        }
-        else {
+        } else {
             Node best = MAX;
 
             for (int i = 0; i < current.children.size(); i++) {
                 Node val = miniMaxAlgorithm(depth + 1, true, current.children.get(i), alpha, beta);
                 tempBoard.setBlock(val.newLayout);
                 //best = Math.min(best,val);
-                if(best.value > tempBoard.calcHeuristic())
-                    best = current.children.get(i);
+                if (best.value > tempBoard.calcHeuristic()) best = current.children.get(i);
 
                 //alpha = Math.min(alpha,best);
-                if(alpha.value > best.value)
-                    alpha = best;
+                if (alpha.value > best.value) alpha = best;
 
                 if (beta.value <= alpha.value) break;
             }
@@ -377,7 +259,7 @@ public class Move {
             int toX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(2)));
             int toY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(3)));
 
-            if (move(tempBoard, fromX, fromY, toX, toY, listOfMoves)==2) { // a capture is found
+            if (move(tempBoard, fromX, fromY, toX, toY, listOfMoves) == 2) { // a capture is found
                 nextValid.add(generateValidMoves(tempBoard)); // generate valid moves for next layer
                 curHeuristic = tempBoard.calcHeuristic();
                 tree.addChild(new Node(curHeuristic, nextValid.get(x), temp));
