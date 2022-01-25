@@ -33,3 +33,5 @@ public class Game {
         }
     }
 }
+
+// https://checkers.fandom.com/wiki/Rules_of_Checkers

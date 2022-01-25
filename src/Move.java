@@ -1,5 +1,12 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+/*
+1223
+2314
+0112
+
+ */
 
 public class Move {
     static int searchI = 0;
@@ -44,7 +51,28 @@ public class Move {
                     currentList.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i + 1) + String.valueOf(y + 1));
             }
         }
+        generateValidMovesKing(inBoard, currentList);
+
         return currentList;
+    }
+
+    void generateValidMovesKing(Board inBoard, ArrayList<String> possibleMoves){
+        for (int i = 0; i < 8; i++) {
+            for (int y = 0; y < 8; y++) {
+                if(inBoard.getCell(i,y).piece!= null){
+                    if(inBoard.getCell(i,y).piece.isKing()){
+                        if (checkValidAutomatic(inBoard, i, y, i + 1, y - 1, false) && inBoard.isWhiteSide()) // up right
+                            possibleMoves.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i + 1) + String.valueOf(y - 1));
+                        if (checkValidAutomatic(inBoard, i, y, i - 1, y - 1, false) && inBoard.isWhiteSide())// up left
+                            possibleMoves.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i - 1) + String.valueOf(y - 1));
+                        if (checkValidAutomatic(inBoard, i, y, i - 1, y + 1, false) && !inBoard.isWhiteSide())// down left
+                            possibleMoves.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i - 1) + String.valueOf(y + 1));
+                        if (checkValidAutomatic(inBoard, i, y, i + 1, y + 1, false) && !inBoard.isWhiteSide())// down right
+                            possibleMoves.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i + 1) + String.valueOf(y + 1));
+                    }
+                }
+            }
+        }
     }
 
     boolean checkValidAutomatic(Board inBoard, int fromX, int fromY, int toX, int toY, boolean capture) { // no text print,
@@ -56,47 +84,6 @@ public class Move {
 
             if (capture) {
                 if (inBoard.getCell(toX, toY).getPiece() != null) {
-                    // same side
-                    if (inBoard.getCell(fromX, fromY).getPiece().isKing()) { // king
-                        int tempToX, tempToY, tempFromX, tempFromY;
-                        tempToX = toX;
-                        tempToY = toY;
-                        tempFromX = fromX;
-                        tempFromY = fromY;
-                        if (toX > fromX && toY < fromY) { // up right
-                            while (tempToX != tempFromX || tempToY != tempFromY) {
-                                tempToX--;
-                                tempToY++;
-                                if (tempToX < 0 || tempToY > 7) return false;
-                                else if (inBoard.getCell(tempToX, tempToY).getPiece() != null) return false;
-                            }
-                            return true;
-                        } else if (toX < fromX && toY < fromY) { // up left
-                            while (tempToX != tempFromX || tempToY != tempFromY) {
-                                tempToX++;
-                                tempToY++;
-                                if (tempToX > 7 || tempToY > 7) return false;
-                                else if (inBoard.getCell(tempToX, tempToY).getPiece() != null) return false;
-                            }
-                            return true;
-                        } else if (toX < fromX && toY > fromY) { // down left
-                            while (tempToX != tempFromX || tempToY != tempFromY) {
-                                tempToX++;
-                                tempToY--;
-                                if (tempToX > 7 || tempToY < 0) return false;
-                                else if (inBoard.getCell(tempToX, tempToY).getPiece() != null) return false;
-                            }
-                            return true;
-                        } else if (toX > fromX && toY > fromY) { // down right
-                            while (tempToX != tempFromX || tempToY != tempFromY) {
-                                tempToX--;
-                                tempToY--;
-                                if (tempToX < 0 || tempToY < 0) return false;
-                                else if (inBoard.getCell(tempToX, tempToY).getPiece() != null) return false;
-                            }
-                            return true;
-                        }
-                    }
                     return inBoard.getCell(fromX, fromY).getPiece().isWhite() != inBoard.getCell(toX, toY).getPiece().isWhite();
                 }
             } else {
@@ -142,9 +129,9 @@ public class Move {
         return captured;
     }
 
-    boolean capture(Board inBoard, int fromX, int fromY, int toX, int toY, int capturedX, int capturedY) { // missing check if has piece near and capture
-        if (checkValidAutomatic(inBoard, fromX, fromY, capturedX, capturedY, true)) { // originally toX toY
-            if (checkValidAutomatic(inBoard, fromX, fromY, toX, toY, false)) { // originally wala to
+    boolean capture(Board inBoard, int fromX, int fromY, int toX, int toY, int capturedX, int capturedY) {
+        if (checkValidAutomatic(inBoard, fromX, fromY, capturedX, capturedY, true)) {
+            if (checkValidAutomatic(inBoard, fromX, fromY, toX, toY, false)) {
                 Piece temp = inBoard.getCell(fromX, fromY).getPiece();
                 inBoard.getCell(fromX, fromY).setPiece(null);
                 inBoard.getCell(toX, toY).setPiece(temp);
@@ -160,8 +147,10 @@ public class Move {
                     else inBoard.setBlackCount(inBoard.getBlackCount() - 1);
                 }
                 inBoard.getCell(capturedX, capturedY).setPiece(null);
-                searchI = 0;
-                searchY = 0;
+                //searchI = toX;
+                //searchY = toY;
+                searchI =0;
+                searchY=0;
                 return true;
             }
             return true;
@@ -200,7 +189,7 @@ public class Move {
 
         tempBoard.setWhiteSide(!tempBoard.isWhiteSide());
 
-        if (depth == 3) return current;
+        if (depth == 5) return current;
 
         if (maximizingPlayer) {
             Node best = MIN;
