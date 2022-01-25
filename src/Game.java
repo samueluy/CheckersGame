@@ -24,8 +24,6 @@ public class Game {
             }
             while(main.move(main.board, fromX, fromY, toX, toY, main.generateValidMoves(main.board))==0); // Loop till valid input
 
-            //main.miniMaxTemp(main.board); // run minimax algorithm
-            //main.miniMax(0, false, )
             main.miniMaxMove(main.board);
             main.board.showBoard();
 

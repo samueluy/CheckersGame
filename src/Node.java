@@ -1,7 +1,8 @@
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
-public class Node {
+public class Node{
     List<Node> children = new ArrayList<>();
     ArrayList<String> list;
     List<List<Cell>> newLayout = new ArrayList<List<Cell>>();
@@ -14,7 +15,7 @@ public class Node {
         this.newLayout = pos;
     }
 
-    public Node(int value){
+    public Node(int value) {
         this.value = value;
     }
 
@@ -24,5 +25,4 @@ public class Node {
     public void addChild(Node child) {
         children.add(child);
     }
-
 }

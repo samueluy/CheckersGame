@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +9,6 @@ public class Board implements Cloneable {
     private int blackKingCount = 0;
     List<List<Cell>> block = new ArrayList<List<Cell>>();
     private boolean whiteSide = true;
-    private double heuristicVal = 0; // - favor black; + favor white
 
 
     public Board() {
@@ -142,11 +142,11 @@ public class Board implements Cloneable {
         return block.get(y).get(x);
     }
 
-    int calcHeuristic() {
-        int pieceValue = whiteCount - blackCount;
-        int kingValue = (whiteKingCount - blackKingCount) * 3;
-        // get number of valid moves
-        return pieceValue + kingValue;
+    int calcHeuristic(ArrayList<String> moves) {
+        int pieceValue = whiteCount*3 - blackCount*3;
+        int kingValue = (whiteKingCount*5 - blackKingCount*5);
+        int nMoves = moves.size();
+        return pieceValue + kingValue + nMoves;
     }
 
     List<List<Cell>> clone(Board original) {
@@ -168,7 +168,7 @@ public class Board implements Cloneable {
                 if (!inBoard.getCell(i, 0).getPiece().isWhite()) {
                     inBoard.setBlackCount(inBoard.getBlackCount() - 1);
                     inBoard.setBlackKingCount(inBoard.getBlackKingCount() + 1);
-                    inBoard.getCell(0, i).getPiece().setKing(true);
+                    inBoard.getCell(i, 0).getPiece().setKing(true);
                 }
             }
         }

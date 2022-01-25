@@ -1,12 +1,7 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-/*
-1223
-2314
-0112
-
- */
+import java.util.concurrent.TimeUnit;
 
 public class Move {
     static int searchI = 0;
@@ -37,7 +32,7 @@ public class Move {
         }
     }
 
-    ArrayList<String> generateValidMoves(Board inBoard) { // generate for king
+    ArrayList<String> generateValidMoves(Board inBoard) {
         ArrayList<String> currentList = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
             for (int y = 0; y < 8; y++) {
@@ -56,11 +51,11 @@ public class Move {
         return currentList;
     }
 
-    void generateValidMovesKing(Board inBoard, ArrayList<String> possibleMoves){
+    void generateValidMovesKing(Board inBoard, ArrayList<String> possibleMoves) {
         for (int i = 0; i < 8; i++) {
             for (int y = 0; y < 8; y++) {
-                if(inBoard.getCell(i,y).piece!= null){
-                    if(inBoard.getCell(i,y).piece.isKing()){
+                if (inBoard.getCell(i, y).piece != null) {
+                    if (inBoard.getCell(i, y).piece.isKing()) {
                         if (checkValidAutomatic(inBoard, i, y, i + 1, y - 1, false) && inBoard.isWhiteSide()) // up right
                             possibleMoves.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i + 1) + String.valueOf(y - 1));
                         if (checkValidAutomatic(inBoard, i, y, i - 1, y - 1, false) && inBoard.isWhiteSide())// up left
@@ -135,7 +130,7 @@ public class Move {
                 Piece temp = inBoard.getCell(fromX, fromY).getPiece();
                 inBoard.getCell(fromX, fromY).setPiece(null);
                 inBoard.getCell(toX, toY).setPiece(temp);
-                inBoard.setWhiteSide(!inBoard.isWhiteSide());
+                //inBoard.setWhiteSide(!inBoard.isWhiteSide());
 
                 if (inBoard.getCell(capturedX, capturedY).getPiece().isKing()) {
                     if (inBoard.getCell(capturedX, capturedY).getPiece().isWhite())
@@ -149,8 +144,8 @@ public class Move {
                 inBoard.getCell(capturedX, capturedY).setPiece(null);
                 //searchI = toX;
                 //searchY = toY;
-                searchI =0;
-                searchY=0;
+                searchI = 0;
+                searchY = 0;
                 return true;
             }
             return true;
@@ -160,6 +155,7 @@ public class Move {
 
     // Driver
     void miniMaxMove(Board current) {
+
         Node MAX = new Node(1000);
         Node MIN = new Node(-1000);
         Node tree = new Node();
@@ -167,10 +163,17 @@ public class Move {
         possibleMoves = generateValidMoves(current);
         moveAI(tree, possibleMoves, false, true); // depth 2
 
+        long start = System.nanoTime(); // Start runtime timer
         Node bestMove = miniMaxAlgorithm(0, false, tree, MIN, MAX);
+        long end = System.nanoTime(); // End runtime timer
 
         board.setBlock(bestMove.newLayout);
-        board.setWhiteSide(!board.isWhiteSide());
+        if (!board.isWhiteSide()) // to check if there were captures
+            board.setWhiteSide(!board.isWhiteSide());
+
+        //long time = end-start;
+        long time = TimeUnit.NANOSECONDS.toMillis(end-start);
+        System.out.println("Execution time: " + time + " nanoseconds");
     }
 
     Node miniMaxAlgorithm(int depth, Boolean maximizingPlayer, Node current, Node alpha, Node beta) {
@@ -178,6 +181,8 @@ public class Move {
         Node MIN = new Node(-1000);
         Board tempBoard = new Board();
         List<List<Cell>> temp = new ArrayList<List<Cell>>();
+
+
 
         // create copy of current board
         for (int i = 0; i < 8; i++) {
@@ -188,6 +193,17 @@ public class Move {
         }
 
         tempBoard.setWhiteSide(!tempBoard.isWhiteSide());
+        tempBoard.setBlock(temp);
+        moveAI(current, generateValidMoves(tempBoard), tempBoard.isWhiteSide(), false);
+
+        // Move Ordering -> sort by heuristic value
+/*
+        if(!maximizingPlayer)
+            current.children.sort((n1, n2) -> n1.value - n2.value); // ascending order
+        else
+            current.children.sort((n1, n2) -> n2.value - n1.value); // decending order
+*/
+
 
         if (depth == 5) return current;
 
@@ -198,7 +214,7 @@ public class Move {
                 tempBoard.setBlock(val.newLayout);
 
                 //best = Math.max(best,val);
-                if (best.value < tempBoard.calcHeuristic()) best = current.children.get(i);
+                if (best.value < tempBoard.calcHeuristic(generateValidMoves(tempBoard))) best = current.children.get(i);
 
                 //alpha = Math.max(alpha,best);
                 if (alpha.value < best.value) alpha = best;
@@ -208,12 +224,12 @@ public class Move {
             return best;
         } else {
             Node best = MAX;
-
             for (int i = 0; i < current.children.size(); i++) {
                 Node val = miniMaxAlgorithm(depth + 1, true, current.children.get(i), alpha, beta);
                 tempBoard.setBlock(val.newLayout);
+
                 //best = Math.min(best,val);
-                if (best.value > tempBoard.calcHeuristic()) best = current.children.get(i);
+                if (best.value > tempBoard.calcHeuristic(generateValidMoves(tempBoard))) best = current.children.get(i);
 
                 //alpha = Math.min(alpha,best);
                 if (alpha.value > best.value) alpha = best;
@@ -227,7 +243,6 @@ public class Move {
     void moveAI(Node tree, ArrayList<String> listOfMoves, boolean white, boolean first) {
         int curHeuristic;
         List<ArrayList<String>> nextValid = new ArrayList<>();
-        List<List<Cell>> newLayout = new ArrayList<List<Cell>>();
         for (int x = 0; x < listOfMoves.size(); x++) {
             Board tempBoard = new Board();
             List<List<Cell>> temp = new ArrayList<List<Cell>>();
@@ -250,11 +265,11 @@ public class Move {
 
             if (move(tempBoard, fromX, fromY, toX, toY, listOfMoves) == 2) { // a capture is found
                 nextValid.add(generateValidMoves(tempBoard)); // generate valid moves for next layer
-                curHeuristic = tempBoard.calcHeuristic();
+                curHeuristic = tempBoard.calcHeuristic(nextValid.get(nextValid.size()-1));
                 tree.addChild(new Node(curHeuristic, nextValid.get(x), temp));
             } else {
                 nextValid.add(generateValidMoves(tempBoard)); // generate valid moves for next layer
-                curHeuristic = tempBoard.calcHeuristic();
+                curHeuristic = tempBoard.calcHeuristic(nextValid.get(nextValid.size()-1));
                 tree.addChild(new Node(curHeuristic, nextValid.get(x), temp));
             }
         }
