@@ -1,37 +1,43 @@
+// This class represent each square of the game board
+
 import java.awt.*;
 
 public class Cell {
 
-    Cell() {
+    public Cell() {
         coord = new Point();
     }
 
-    Cell(Piece unit) {
-        coord = new Point();
-        piece = unit;
-    }
-
-    Cell(Cell orig) {
+    public Cell(Cell orig) {
         this.piece = orig.piece;
         this.coord = orig.coord;
     }
 
-    Piece piece;
-    Point coord = new Point();
+    private Piece piece;
+    private Point coord;
 
-    void setPiece(Piece piece) {
+    /**
+     * @param piece : Piece to be added to the Cell
+     * @brief Adds a piece to a cell
+     */
+    public void setPiece(Piece piece) {
         this.piece = piece;
     }
 
-    void setCoord(int x, int y) {
+    /**
+     * @param x : X Coordinate to be set
+     * @param y : Y Coordinate to be set
+     * @brief Adds a piece to a cell
+     */
+    public void setCoord(int x, int y) {
         this.coord.setLocation(x, y);
     }
 
-    Point getCoord() {
-        return coord;
-    }
-
-    Piece getPiece() {
+    /**
+     * @return Piece in the Cell
+     * @brief Gets the current piece of this Cell
+     */
+    public Piece getPiece() {
         return piece;
     }
 }

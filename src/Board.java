@@ -1,73 +1,103 @@
-import java.lang.reflect.Array;
+// This class represents the board of the game
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Board implements Cloneable {
-    private int whiteCount = 12;
-    private int blackCount = 12;
-    private int whiteKingCount = 0;
-    private int blackKingCount = 0;
-    List<List<Cell>> block = new ArrayList<List<Cell>>();
-    private boolean whiteSide = true;
-
+    private int whiteCount = 12; // Count of regular white pieces
+    private int blackCount = 12; // Count of regular black pieces
+    private int whiteKingCount = 0; // Count of white king pieces
+    private int blackKingCount = 0; // Count of black king pieces
+    List<List<Cell>> block = new ArrayList<List<Cell>>(); // List of cells representing each square
+    private boolean whiteSide = true; // Current side playing
 
     public Board() {
     }
 
-    public Board(Board inBoard) {
-        this.setBlock(inBoard.getBlock());
-        this.setBlackKingCount(inBoard.getBlackKingCount());
-        this.setWhiteKingCount(inBoard.getWhiteKingCount());
-        this.setBlackCount(inBoard.getBlackCount());
-        this.setWhiteCount(inBoard.getWhiteCount());
-        this.setWhiteSide(inBoard.isWhiteSide());
-    }
-
-    List<List<Cell>> getBlock() {
-        return block;
-    }
-
-    void setWhiteSide(boolean white) {
+    /**
+     * @param white : If the board is white side
+     * @brief Changes the side playing
+     */
+    public void setWhiteSide(boolean white) {
         this.whiteSide = white;
     }
 
-    void setBlock(List<List<Cell>> block) {
+    /**
+     * @param block : List of cells
+     * @brief Sets the locations of the pieces given a list of Cells
+     */
+    public void setBlock(List<List<Cell>> block) {
         this.block = block;
     }
 
-    void setWhiteCount(int n) {
+    /**
+     * @param n : Number of white pieces
+     * @brief Set the number of white pieces
+     */
+    public void setWhiteCount(int n) {
         this.whiteCount = n;
     }
 
-    void setBlackCount(int n) {
+    /**
+     * @param n : Number of black pieces
+     * @brief Set the number of black pieces
+     */
+    public void setBlackCount(int n) {
         this.blackCount = n;
     }
 
-    void setWhiteKingCount(int n) {
+    /**
+     * @param n : Number of white king pieces
+     * @brief Set the number of white king pieces
+     */
+    public void setWhiteKingCount(int n) {
         this.whiteKingCount = n;
     }
 
-    void setBlackKingCount(int n) {
+    /**
+     * @param n : Number of black king pieces
+     * @brief Set the number of black king pieces
+     */
+    public void setBlackKingCount(int n) {
         this.blackKingCount = n;
     }
 
-    int getWhiteCount() {
+    /**
+     * @return Number of white pieces
+     * @brief Get the number of white pieces
+     */
+    public int getWhiteCount() {
         return whiteCount;
     }
 
-    int getBlackCount() {
+    /**
+     * @return Number of black pieces
+     * @brief Get the number of black pieces
+     */
+    public int getBlackCount() {
         return blackCount;
     }
 
-    int getWhiteKingCount() {
+    /**
+     * @return Number of white king pieces
+     * @brief Get the number of white king pieces
+     */
+    public int getWhiteKingCount() {
         return whiteKingCount;
     }
 
-    int getBlackKingCount() {
+    /**
+     * @return Number of white king pieces
+     * @brief Get the number of white king pieces
+     */
+    public int getBlackKingCount() {
         return blackKingCount;
     }
 
-    void createBoard() {
+    /**
+     * @brief Initialize the starting position of pieces
+     */
+    public void createBoard() {
         for (int i = 0; i < 8; i++) {
             for (int y = 0; y < 8; y++) {
                 block.add(new ArrayList<>());
@@ -101,7 +131,10 @@ public class Board implements Cloneable {
         }
     }
 
-    void showBoard() {
+    /**
+     * @brief Display the current board
+     */
+    public void showBoard() {
         int vert = 0;
         int hor = 0;
         System.out.print("  ");
@@ -124,7 +157,11 @@ public class Board implements Cloneable {
         System.out.print("\n");
     }
 
-    boolean over() {
+    /**
+     * @return If the game is over
+     * @brief Check if the game is over and display the winner
+     */
+    public boolean over() {
         if (whiteCount == 0 || blackCount == 0) {
             if (whiteCount == 0) System.out.println("Black win!");
             else System.out.println("White win!");
@@ -134,35 +171,42 @@ public class Board implements Cloneable {
         return false;
     }
 
-    boolean isWhiteSide() {
+    /**
+     * @return If white is the side currently playing
+     * @brief Check what side is currently playing
+     */
+    public boolean isWhiteSide() {
         return whiteSide;
     }
 
-    Cell getCell(int x, int y) {
+    /**
+     * @param x : X coordinate of Cell
+     * @param y : Y coordinate of Cell
+     * @return Cell located in the given X and Y coordinate
+     * @brief Get the cell given x and y coordinate
+     */
+
+    public Cell getCell(int x, int y) {
         return block.get(y).get(x);
     }
 
-    int calcHeuristic(ArrayList<String> moves) {
-        int pieceValue = whiteCount*3 - blackCount*3;
-        int kingValue = (whiteKingCount*5 - blackKingCount*5);
-        int nMoves = moves.size();
+    /**
+     * @param moves : ArrayList of possible moves in state
+     * @return Cell located in the given X and Y coordinate
+     * @brief Calculate the heuristic of the current layout
+     */
+    public int calcHeuristic(ArrayList<String> moves) {
+        int pieceValue = whiteCount * 3 - blackCount * 3; // Each piece is given the value of 3
+        int kingValue = (whiteKingCount * 5 - blackKingCount * 5); // Each king is given the value of 5
+        int nMoves = moves.size(); // Each possible move is given the value of 1
         return pieceValue + kingValue + nMoves;
     }
 
-    List<List<Cell>> clone(Board original) {
-        List<List<Cell>> temp = new ArrayList<List<Cell>>();
-
-        for (int i = 0; i < 8; i++) {
-            temp.add(new ArrayList<Cell>());
-            for (int y = 0; y < 8; y++) {
-                temp.get(i).add(new Cell(original.getCell(y, i)));
-            }
-        }
-
-        return temp;
-    }
-
-    void convertToKing(Board inBoard) {
+    /**
+     * @param inBoard : Current board working on
+     * @brief Convert a regular piece to a king when it reaches the other side of the board
+     */
+    public void convertToKing(Board inBoard) {
         for (int i = 0; i < 8; i++) {
             if (inBoard.getCell(i, 0).getPiece() != null) {
                 if (!inBoard.getCell(i, 0).getPiece().isWhite()) {
