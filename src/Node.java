@@ -23,6 +23,13 @@ public class Node {
     public Node() {
     }
 
+    public Node(Node origNode){
+        this.children = origNode.children;
+        this.list = origNode.list;
+        this.value = origNode.value;
+        this.newLayout = origNode.newLayout;
+    }
+
     /**
      * @param parent : Parent node
      * @brief Adds a child to a given node

@@ -1,12 +1,19 @@
 // Supports all the player and AI moves as well as the MiniMax Algorithm
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Move {
     private static int searchI = 0; // x Coordinate counter for capture
     private static int searchY = 0; // y Coordinate counter for capture
-    private Board board = new Board();
+    private static int depth1 = 0; // Node counter for depth 1
+    private static int depth2 = 0; // Node counter for depth 2
+    private static int depth3 = 0; // Node counter for depth 3
+    private static int visitCount = 0;
+    private final Map<Integer, Integer> branchCount = new HashMap<Integer, Integer>();
+    private final Board board = new Board();
 
     /**
      * @param inBoard     : Current board working on
@@ -49,13 +56,13 @@ public class Move {
         for (int i = 0; i < 8; i++) {
             for (int y = 0; y < 8; y++) {
                 if (checkValidAutomatic(inBoard, i, y, i + 1, y - 1, false) && !inBoard.isWhiteSide()) // up right
-                    currentList.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i + 1) + String.valueOf(y - 1));
+                    currentList.add(String.valueOf(i) + y + (i + 1) + (y - 1));
                 if (checkValidAutomatic(inBoard, i, y, i - 1, y - 1, false) && !inBoard.isWhiteSide())// up left
-                    currentList.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i - 1) + String.valueOf(y - 1));
+                    currentList.add(String.valueOf(i) + y + (i - 1) + (y - 1));
                 if (checkValidAutomatic(inBoard, i, y, i - 1, y + 1, false) && inBoard.isWhiteSide())// down left
-                    currentList.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i - 1) + String.valueOf(y + 1));
+                    currentList.add(String.valueOf(i) + y + (i - 1) + (y + 1));
                 if (checkValidAutomatic(inBoard, i, y, i + 1, y + 1, false) && inBoard.isWhiteSide())// down right
-                    currentList.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i + 1) + String.valueOf(y + 1));
+                    currentList.add(String.valueOf(i) + y + (i + 1) + (y + 1));
             }
         }
         generateValidMovesKing(inBoard, currentList);
@@ -74,13 +81,13 @@ public class Move {
                 if (inBoard.getCell(i, y).getPiece() != null) {
                     if (inBoard.getCell(i, y).getPiece().isKing()) {
                         if (checkValidAutomatic(inBoard, i, y, i + 1, y - 1, false) && inBoard.isWhiteSide()) // up right
-                            possibleMoves.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i + 1) + String.valueOf(y - 1));
+                            possibleMoves.add(String.valueOf(i) + y + (i + 1) + (y - 1));
                         if (checkValidAutomatic(inBoard, i, y, i - 1, y - 1, false) && inBoard.isWhiteSide())// up left
-                            possibleMoves.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i - 1) + String.valueOf(y - 1));
+                            possibleMoves.add(String.valueOf(i) + y + (i - 1) + (y - 1));
                         if (checkValidAutomatic(inBoard, i, y, i - 1, y + 1, false) && !inBoard.isWhiteSide())// down left
-                            possibleMoves.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i - 1) + String.valueOf(y + 1));
+                            possibleMoves.add(String.valueOf(i) + y + (i - 1) + (y + 1));
                         if (checkValidAutomatic(inBoard, i, y, i + 1, y + 1, false) && !inBoard.isWhiteSide())// down right
-                            possibleMoves.add(String.valueOf(i) + String.valueOf(y) + String.valueOf(i + 1) + String.valueOf(y + 1));
+                            possibleMoves.add(String.valueOf(i) + y + (i + 1) + (y + 1));
                     }
                 }
             }
@@ -177,7 +184,7 @@ public class Move {
                 if (inBoard.getCell(capturedX, capturedY).getPiece().isKing()) {
                     if (inBoard.getCell(capturedX, capturedY).getPiece().isWhite())
                         inBoard.setWhiteKingCount(inBoard.getWhiteKingCount() - 1);
-                    else inBoard.setBlackCount(inBoard.getBlackCount() - 1);
+                    else inBoard.setBlackCount(inBoard.getBlackKingCount() - 1);
                 } else {
                     if (inBoard.getCell(capturedX, capturedY).getPiece().isWhite())
                         inBoard.setWhiteCount(inBoard.getWhiteCount() - 1);
@@ -199,17 +206,32 @@ public class Move {
      * @brief Driver code for the miniMax algorithm
      */
     public void miniMaxMove(Board current) {
-
+        branchCount.put(1, 0); // Initialize hashmap of depth 1
+        branchCount.put(2, 0); // Initialize hashmap of depth 2
+        branchCount.put(3, 0); // Initialize hashmap of depth 3
+        int averageBranchingFactor;
         Node MAX = new Node(1000);
         Node MIN = new Node(-1000);
         Node tree = new Node();
         ArrayList<String> possibleMoves;
         possibleMoves = generateValidMoves(current);
-        moveAI(tree, possibleMoves, false, true); // depth 2
+        moveAI(tree, possibleMoves, false, true);
 
         long start = System.nanoTime(); // Start runtime timer
         Node bestMove = miniMaxAlgorithm(0, false, tree, MIN, MAX);
         long end = System.nanoTime(); // End runtime timer
+
+        int n1 = branchCount.get(1) / depth1;
+        int n2 = branchCount.get(2) / depth2;
+        int n3 = branchCount.get(3) / depth3;
+        averageBranchingFactor = (n1 + n2 + n3) / 3;
+        int value = visitCount;
+        System.out.println("Average branching factor: " + averageBranchingFactor);
+        System.out.println("Effective branching factor: " + Math.round(((value)) * 10.0) / 10.0);
+        visitCount = 0;
+        depth1 = 0;
+        depth2 = 0;
+        depth3 = 0;
 
         board.setBlock(bestMove.getNewLayout());
         if (!board.isWhiteSide()) // to check if there were captures
@@ -217,6 +239,8 @@ public class Move {
 
         long time = end - start;
         System.out.println("Execution time: " + time + " nanoseconds");
+
+        branchCount.clear(); // Empty the current values of the hashmap
     }
 
     /**
@@ -234,10 +258,9 @@ public class Move {
         Board tempBoard = new Board();
         List<List<Cell>> temp = new ArrayList<List<Cell>>();
 
-
         // create copy of current board
         for (int i = 0; i < 8; i++) {
-            temp.add(new ArrayList<Cell>());
+            temp.add(new ArrayList<>());
             for (int y = 0; y < 8; y++) {
                 temp.get(i).add(new Cell(board.getCell(y, i)));
             }
@@ -245,18 +268,33 @@ public class Move {
 
         tempBoard.setWhiteSide(!tempBoard.isWhiteSide());
         tempBoard.setBlock(temp);
+
         // Create children for current node
         moveAI(current, generateValidMoves(tempBoard), tempBoard.isWhiteSide(), false);
 
+        // Get branching factor
+        switch (depth) {
+            case 1:
+                branchCount.put(1, branchCount.get(1) + current.getChildren().size());
+                depth1++;
+            case 2:
+                branchCount.put(2, branchCount.get(2) + current.getChildren().size());
+                depth2++;
+            case 3:
+                branchCount.put(3, branchCount.get(3) + current.getChildren().size());
+                depth3++;
+        }
+
         // Move Ordering -> sort by heuristic value
-        if (!maximizingPlayer) current.getChildren().sort((n1, n2) -> n2.getValue() - n1.getValue()); // decending order
+        if (maximizingPlayer) current.getChildren().sort((n1, n2) -> n2.getValue() - n1.getValue()); // descending order
         else current.getChildren().sort((n1, n2) -> n1.getValue() - n2.getValue()); // ascending order
 
         // Terminating value. Ends at depth 3
         if (depth == 3) return current;
 
+        Node best;
         if (maximizingPlayer) {
-            Node best = MIN;
+            best = MIN;
             for (int i = 0; i < current.getChildren().size(); i++) {
                 Node val = miniMaxAlgorithm(depth + 1, false, current.getChildren().get(i), alpha, beta);
                 tempBoard.setBlock(val.getNewLayout());
@@ -264,31 +302,39 @@ public class Move {
                 // Set the current best value to the larger value
                 if (best.getValue() < tempBoard.calcHeuristic(generateValidMoves(tempBoard)))
                     best = current.getChildren().get(i);
+                else best = new Node(val);
 
-                if (alpha.getValue() < best.getValue()) alpha = best;
+                if (alpha.getValue() < best.getValue()) {
+                    visitCount++;
+                    alpha = best;
+                }
 
                 // Terminate function / prune
                 if (beta.getValue() <= alpha.getValue()) break;
+
             }
-            return best;
         } else {
-            Node best = MAX;
+            best = MAX;
             for (int i = 0; i < current.getChildren().size(); i++) {
                 Node val = miniMaxAlgorithm(depth + 1, true, current.getChildren().get(i), alpha, beta);
                 tempBoard.setBlock(val.getNewLayout());
 
-                // Set the current best value to the larger value
+                // Set the current best value to the smaller value
                 if (best.getValue() > tempBoard.calcHeuristic(generateValidMoves(tempBoard)))
                     best = current.getChildren().get(i);
+                else best = new Node(val);
 
-                if (alpha.getValue() > best.getValue()) alpha = best;
+                if (beta.getValue() > best.getValue()) {
+                    visitCount++;
+                    beta = best;
+                }
 
                 // Terminate function / prune
                 if (beta.getValue() <= alpha.getValue()) break;
             }
             // Return the best move
-            return best;
         }
+        return best;
     }
 
     /**
@@ -314,7 +360,7 @@ public class Move {
             }
 
             tempBoard.setBlock(temp);
-            tempBoard.setWhiteSide(!tempBoard.isWhiteSide());
+            //tempBoard.setWhiteSide(!tempBoard.isWhiteSide());
 
             int fromX = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(0)));
             int fromY = Integer.parseInt(String.valueOf(listOfMoves.get(x).charAt(1)));

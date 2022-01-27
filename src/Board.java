@@ -162,7 +162,7 @@ public class Board implements Cloneable {
      * @brief Check if the game is over and display the winner
      */
     public boolean over() {
-        if (whiteCount == 0 || blackCount == 0) {
+        if ((whiteCount + whiteKingCount) == 0 || (blackCount + blackKingCount) == 0) {
             if (whiteCount == 0) System.out.println("Black win!");
             else System.out.println("White win!");
 
@@ -221,7 +221,7 @@ public class Board implements Cloneable {
                 if (inBoard.getCell(i, 7).getPiece().isWhite()) {
                     inBoard.setWhiteCount(inBoard.getWhiteCount() - 1);
                     inBoard.setWhiteKingCount(inBoard.getWhiteKingCount());
-                    inBoard.getCell(i, 0).getPiece().setKing(true);
+                    inBoard.getCell(i, 7).getPiece().setKing(true);
                 }
             }
         }
