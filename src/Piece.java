@@ -8,9 +8,9 @@ public class Piece {
         this.symbol = str;
     }
 
-    private boolean bWhite;
-    private boolean bKing;
-    private String symbol = "";
+    private boolean bWhite; // If Piece is white
+    private boolean bKing; // if Piece is king
+    private String symbol = ""; // Symbol representation of the piece
 
     /**
      * @param king : If the current piece is a king

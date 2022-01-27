@@ -13,8 +13,8 @@ public class Cell {
         this.coord = orig.coord;
     }
 
-    private Piece piece;
-    private Point coord;
+    private Piece piece; // Piece in the cell
+    private Point coord; // Coordinate of the cell
 
     /**
      * @param piece : Piece to be added to the Cell
