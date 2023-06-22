@@ -1,6 +1,8 @@
-# Checkers Mini-Max Alpha Beta Pruning Documentation
+# Checkers Mini-Max Alpha Beta Pruning
 
 This documentation is for the Checkers Mini-Max Alpha Beta Pruning program that I developed as part of the CSINTSY course at De La Salle University – Manila.
+
+[Documentation](https://docs.google.com/document/d/1qL85K-IjkLkhqLiNrbg-mT6uK05iV6sKE8jl3-QuCMs/edit?usp=sharing)
 
 ## State Representation
 
